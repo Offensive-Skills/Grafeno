@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Ranking - Grafeno</title>
+    <link rel="stylesheet" href="../../assets/css/ranking.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Courier+Prime&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body class="dark-theme">
+    <canvas id="bgCanvas"></canvas>
+    <div class="ranking-overlay">
+      <!-- Barra superior con botón de Atrás -->
+      <div class="top-bar">
+        <button id="btn-atras" class="bar-button-atras">Atrás</button>
+      </div>
+      <div class="main-content">
+        <h1>Ranking</h1>
+        <table id="ranking-table">
+          <thead>
+            <tr>
+              <th>Posición</th>
+              <th>Usuario</th>
+              <th>Puntos</th>
+            </tr>
+          </thead>
+          <tbody id="top10-body">
+            <!-- Se insertan las filas de los 10 primeros -->
+          </tbody>
+        </table>
+        <!-- Contenedor para la fila extra si el usuario actual no está en top10 -->
+        <div id="extra-ranking">
+          <!-- Se insertará la fila del usuario actual -->
+        </div>
+      </div>
+    </div>
+    <script src="../background/background.js"></script>
+    <script src="ranking.js"></script>
+  </body>
+</html>

@@ -1,0 +1,119 @@
+/* writeup.css */
+
+/* Fondo y fuente */
+body.dark-theme {
+  margin: 0;
+  padding: 0;
+  font-family: 'Courier Prime', Courier, monospace;
+  background-color: #2b2b2b;
+  color: #e0e0e0;
+}
+
+/* Contenedor principal centrado */
+.writeup-container {
+  width: 90%;
+  max-width: 900px;
+  margin: 40px auto;
+  padding: 20px;
+  background-color: rgba(43,43,43,0.85);
+  border: 2px solid #beefbe;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+/* Encabezado con botón Atrás */
+.header {
+  text-align: left;
+  margin-bottom: 20px;
+}
+
+.btn-atras {
+  padding: 8px 15px;
+  background-color: #2b2b2b;
+  color: #beefbe;
+  border: 2px solid #beefbe;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.btn-atras:hover {
+  background-color: #beefbe;
+  color: #2b2b2b;
+}
+
+/* Contenedor del contenido del writeup */
+.writeup-content {
+  text-align: left;
+  line-height: 1.6;
+  font-size: 16px;
+}
+
+/* Aseguramos que las imágenes no desborden el contenedor */
+.writeup-content img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 10px auto;
+}
+
+/* Opcional: Si quieres centrar títulos y párrafos */
+.writeup-content h1 {
+  text-align: center;
+}
+
+.writeup-content h2,
+.writeup-content h3,
+.writeup-content h4,
+.writeup-content p {
+  text-align: left;
+}
+
+
+/* Enlaces en color de acento */
+.writeup-content a {
+  color: #beefbe;
+  text-decoration: none;
+}
+
+.writeup-content a:hover {
+  text-decoration: underline;
+}
+
+/* Mensajes de error */
+.error {
+  color: #ff4f4f;
+  text-align: center;
+  font-weight: bold;
+}
+
+/* Estilos para bloques de código */
+.writeup-content pre {
+  background-color: #333; /* fondo más oscuro */
+  color: #beefbe;
+  padding: 10px;
+  border-radius: 5px;
+  overflow-x: auto;         /* permite scroll horizontal si es necesario */
+  white-space: pre-wrap;    /* permite que el código se envuelva */
+  word-wrap: break-word;
+  position: relative;       /* para posicionar un tooltip, si lo deseas */
+  cursor: pointer;          /* indica que se puede interactuar para copiar */
+}
+
+/* Opcional: estilo para tooltip al copiar */
+.copy-tooltip {
+  position: absolute;
+  top: 5px;
+  right: 10px;
+  background-color: rgba(0,0,0,0.7);
+  color: #beefbe;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 12px;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.writeup-content pre.copied .copy-tooltip {
+  opacity: 1;
+}

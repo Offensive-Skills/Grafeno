@@ -1,0 +1,136 @@
+/* config.css */
+
+/* Fondo y fuente base */
+body.dark-theme {
+    margin: 0;
+    padding: 0;
+    font-family: 'Courier Prime', Courier, monospace;
+    background-color: #2b2b2b;
+    color: #e0e0e0;
+    overflow: hidden;
+  }
+  
+  /* Canvas de fondo */
+  #bgCanvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+  }
+  
+  /* Overlay principal */
+  .config-overlay {
+    position: relative;
+    width: 90%;
+    max-width: 800px;
+    margin: 40px auto;
+    padding: 20px;
+    background-color: rgba(43,43,43,0.9);
+    border: 2px solid #beefbe;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+    z-index: 1;
+  }
+  
+  /* Barra superior */
+  .top-bar {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    border-bottom: 2px solid #beefbe;
+    background-color: rgba(43,43,43,0.85);
+    margin-bottom: 20px;
+  }
+  
+  .bar-button-atras {
+    padding: 8px 15px;
+    border: 2px solid #d14141;
+    background-color: #2b2b2b;
+    color: #d14141;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s, color 0.3s;
+    margin-right: 20px;
+  }
+  
+  .bar-button-atras:hover {
+    background-color: #d14141;
+    color: #2b2b2b;
+  }
+  
+  .navbar-title {
+    flex: 1;
+    text-align: center;
+    color: #beefbe;
+    font-size: 24px;
+    margin: 0;
+  }
+  
+  /* Contenido de la configuración */
+  .config-content {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+  }
+  
+  /* Sección de configuración */
+  .config-section {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .config-section h1 {
+    font-size: 22px;
+    margin: 0;
+    color: #beefbe;
+    border-bottom: 1px solid #beefbe;
+    padding-bottom: 5px;
+  }
+  
+  .section-info {
+    font-size: 14px;
+    color: #ffffff; /* sutil tono azul */
+    margin: 0;
+  }
+  
+  /* Input para la ruta de destino */
+  #destinationInput {
+    padding: 8px;
+    border: 2px solid #beefbe;
+    background-color: #2b2b2b;
+    color: #beefbe;
+    border-radius: 5px;
+    font-family: 'Courier Prime', monospace;
+  }
+  
+  /* Reset container: botón a la izquierda y mensaje a la derecha */
+  .reset-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  
+  .reset-button {
+    padding: 10px 20px;
+    border: 2px solid #d14141;
+    background-color: #2b2b2b;
+    color: #d14141;
+    border-radius: 5px;
+    cursor: pointer;
+    font-family: 'Courier Prime', monospace;
+    transition: background-color 0.3s, color 0.3s;
+  }
+  
+  .reset-button:hover {
+    background-color: #d14141;
+    color: #2b2b2b;
+  }
+  
+  /* Mensaje de estado para el reset */
+  .reset-status {
+    font-size: 16px;
+  }
+  

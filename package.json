@@ -1,0 +1,56 @@
+{
+  "name": "grafeno",
+  "version": "1.0.0",
+  "description": "Aplicación para despliegue de entornos simulados de pentesting",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "keywords": [
+    "cibersecurity",
+    "ciberseguridad",
+    "pentesting",
+    "red team",
+    "hack",
+    "hacking"
+  ],
+  "author": {
+    "name": "Offensive Skills",
+    "email": "contacto@offs.es"
+  },
+  "license": "SEE LICENSE IN LICENSE",
+  "devDependencies": {
+    "@electron/remote": "^2.1.2",
+    "electron": "^25.9.8",
+    "electron-builder": "^25.1.8"
+  },
+  "dependencies": {
+    "electron-updater": "^6.3.9",
+    "qr-code-styling": "^1.9.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Offensive-Skills/Grafeno.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Offensive-Skills/Grafeno/issues"
+  },
+  "homepage": "https://github.com/Offensive-Skills/Grafeno#readme",
+  "build": {
+    "appId": "com.offensiveskills.grafeno",
+    "productName": "Grafeno",
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "Offensive-Skills",
+        "repo": "Grafeno"
+      }
+    ],
+    "files": [
+      "**/*"
+    ],
+    "directories": {
+      "buildResources": "build"
+    }
+  }
+}

@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Módulos - Grafeno</title>
+    <link rel="stylesheet" href="../../assets/css/modulos.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Courier+Prime&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body class="dark-theme">
+    <!-- Canvas de fondo para animación -->
+    <canvas id="bgCanvas"></canvas>
+    <div class="modulos-overlay">
+      <div class="top-bar">
+        <button id="btn-atras" class="bar-button-atras">Atrás</button>
+        <h1 class="navbar-title">Módulos del curso <span id="course-title"></span></h1>
+      </div>
+      <div class="main-content">
+        <div class="modulos-list" id="modulos-list">
+          <!-- Aquí se renderizará el listado de módulos -->
+        </div>
+      </div>
+    </div>
+    <!-- Reutilizamos el mismo script de fondo -->
+    <script src="../background/background.js"></script>
+    <script src="modulos.js"></script>
+  </body>
+</html>

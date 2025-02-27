@@ -1,0 +1,233 @@
+/* login.css */
+
+/* Fuente principal */
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Courier Prime', Courier, monospace;
+    background-color: #2b2b2b; /* color base oscuro */
+    overflow: hidden; /* para ocultar scroll si el canvas ocupa toda la pantalla */
+  }
+
+  /* Aplica box-sizing: border-box a todos los elementos */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+  
+  canvas#bgCanvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 0;
+  }
+  
+  /* Contenedor principal que agrupa todo (incluido el recuadro) */
+  .login-overlay {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+  }
+  
+  /* Capa de carga */
+  .loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(220, 220, 220, 0.445); /* tono gris/blanco translúcido */
+    display: none; /* Oculto por defecto */
+    align-items: center;
+    justify-content: center;
+    z-index: 10; /* por encima del recuadro de login */
+  }
+  
+  .loading-overlay .spinner {
+    border: 8px solid #f3f3f3;
+    border-top: 8px solid #beefbe;
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    animation: spin 1s linear infinite;
+  }
+  
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  
+  /* Recuadro principal de login */
+  .login-container {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 750px; /* más alargado horizontalmente */
+    min-height: 320px;
+    background-color: #2b2b2b;
+    border: 2px solid #beefbe;
+    border-radius: 8px;
+    display: flex;
+    overflow: hidden; /* para forzar el layout en columnas */
+    z-index: 1;
+  }
+  
+  /* Columna izquierda */
+  .login-left {
+    flex: 1;
+    padding: 30px;
+    box-sizing: border-box;
+    color: #ffffff;
+  }
+  
+  /* Título */
+  .login-left .title {
+    margin: 0 0 20px;
+    color: #beefbe;
+    font-size: 24px;
+    text-align: center;
+  }
+  
+  /* Labels e inputs */
+  .login-left label {
+    display: block;
+    margin-bottom: 5px;
+    color: #beefbe;
+    font-weight: bold;
+  }
+  
+  .login-left input[type="text"],
+  .login-left input[type="password"] {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #4c4c4c;
+    border-radius: 4px;
+    background-color: #3b3b3b;
+    color: #fff;
+    font-family: 'Courier Prime', Courier, monospace;
+  }
+  
+  .login-left input[type="text"]::placeholder,
+  .login-left input[type="password"]::placeholder {
+    color: #999;
+  }
+
+  
+  
+  .btn-login {
+    width: 100%;
+    padding: 10px;
+    margin-top: 20px;
+    background-color: #beefbe;
+    color: #2b2b2b;
+    font-weight: bold;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    display: block; /* Evita el comportamiento inline que puede afectar el ancho */
+  }
+  
+  
+  .btn-login:hover {
+    background-color: #aee0ae;
+  }
+  
+  /* Mensaje de error */
+  .error-message {
+    margin-top: 10px;
+    text-align: center;
+    color: #ff4f4f;
+    font-weight: bold;
+  }
+  
+  /* Columna derecha */
+  .login-right {
+    width: 45%;
+    padding: 30px;
+    box-sizing: border-box;
+    color: #fff;
+    border-left: 1px solid #4c4c4c;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .login-right p {
+    margin: 0;
+    font-size: 14px;
+    text-align: center;
+    line-height: 1.5;
+  }
+  
+  .link-credentials {
+    color: #beefbe;
+    text-decoration: none;
+  }
+  
+  .link-credentials:hover {
+    text-decoration: underline;
+  }
+  
+  /* QR */
+  .qr-container {
+    margin-top: 10px;
+    width: 150px;
+    height: 150px;
+    border: 2px solid #beefbe;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .qr-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  
+
+  /* Estilos para el recuadro de warning */
+.warning-container {
+  margin-top: 50px;
+  padding: 15px;
+  border: 2px solid #c93b3b;
+  background-color: #c93b3b;
+  color: #ffffff;
+  font-size: 19px;
+  border-radius: 8px;
+  text-align: center;
+  max-width: 750px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+
+.btn-guardar {
+  padding: 8px 15px;
+  background-color: #2b2b2b;
+  color: #beefbe;
+  border: 2px solid #beefbe;
+  border-radius: 5px;
+  cursor: pointer;
+  font-family: 'Courier Prime', Courier, monospace;
+  transition: background-color 0.3s, color 0.3s;
+  margin-left: 10px;
+}
+
+.btn-guardar:hover {
+  background-color: #beefbe;
+  color: #2b2b2b;
+}
+
+.remember-container {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 10px;
+}

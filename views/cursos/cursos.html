@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Cursos - Grafeno</title>
+    <link rel="stylesheet" href="../../assets/css/cursos.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=Courier+Prime&display=swap" rel="stylesheet" />
+  </head>
+  <body class="dark-theme">
+    <!-- Canvas de fondo (se puede reutilizar el mismo script de background) -->
+    <canvas id="bgCanvas"></canvas>
+    <div class="cursos-overlay">
+      <div class="top-bar">
+        <button id="btn-atras" class="bar-button-atras">Atrás</button>
+        <h1 class="navbar-title">Cursos</h1>
+      </div>
+      <div class="main-content">
+        <div class="cursos-list" id="cursos-list">
+          <!-- Aquí se renderizará el listado de cursos -->
+        </div>
+      </div>
+    </div>
+    <script src="../background/background.js"></script>
+    <script src="cursos.js"></script>
+  </body>
+</html>

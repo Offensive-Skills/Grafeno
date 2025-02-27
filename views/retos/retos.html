@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Retos - Grafeno</title>
+    <link rel="stylesheet" href="../../assets/css/retos.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Courier+Prime&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body class="dark-theme">
+    <canvas id="bgCanvas"></canvas>
+    <div class="retos-overlay">
+      <div class="top-bar">
+        <select id="select-dificultad">
+          <option value="Facil">Fácil</option>
+          <option value="Medio">Medio</optiona>
+          <option value="Dificil">Difícil</option>
+          <option value="Insano">Insano</option>
+        </select>
+        <select id="select-tematica">
+          <option value="Web">Web</option>
+          <option value="Criptografia">Criptografía</option>
+          <option value="Forense">Forense</option>
+          <option value="Escalada de privilegios">Escalada de Privilegios</option>
+          <option value="Reversing">Reversing</option>
+          <option value="Esteganografia">Esteganografía</option>
+          <option value="Miscelanea">Miscelánea</option>
+        </select>
+        <select id="select-estado">
+          <option value="Todos">Todos</option>
+          <option value="Completado">Completado</option>
+          <option value="Pendientes">Pendientes</option>
+        </select>
+        <button id="btn-buscar" class="bar-button">Buscar</button>
+        <button id="btn-atras" class="bar-button-atras">Atrás</button>
+      </div>
+      <div class="main-content">
+        <div class="retos-list" id="retos-list"></div>
+        <div class="reto-detail" id="reto-detail">
+          <div id="download-status" class="download-status"></div>
+        </div>
+      </div>
+    </div>
+    <script src="../background/background.js"></script>
+    <script src="retos.js"></script>
+  </body>
+</html>

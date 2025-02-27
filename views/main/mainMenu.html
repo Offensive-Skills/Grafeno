@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8">
+    <title>Grafeno - Menú Principal</title>
+    <link rel="stylesheet" href="../../assets/css/mainMenu.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Courier+Prime&display=swap" rel="stylesheet">
+    <!-- Incluye Chart.js para poder usar la variable Chart -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  </head>
+  <body class="dark-theme">
+    <canvas id="bgCanvas"></canvas>
+    
+    <div class="menu-overlay">
+      <!-- Lado izquierdo: Botones (35%) -->
+      <div class="menu-left">
+        <button id="btn-retos" class="menu-button">Retos</button>
+        <button id="btn-temporada" class="menu-button">Temporada</button>
+        <button id="btn-cursos" class="menu-button">Cursos</button>
+        <button id="btn-ranking" class="menu-button">Ranking</button>
+        <button id="btn-config" class="menu-button">Configuracion</button>
+        
+      </div>
+      <!-- Lado derecho: Estadísticas (65%) -->
+      <div class="menu-right">
+        <div class="stats-container">
+          <canvas id="statsChart"></canvas>
+        </div>
+      </div>
+    </div>
+    
+    <script src="../background/background.js"></script>
+    <script src="mainMenu.js"></script>
+  </body>
+</html>

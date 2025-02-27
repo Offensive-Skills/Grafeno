@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Temporada - Grafeno</title>
+    <link rel="stylesheet" href="../../assets/css/temporada.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=Courier+Prime&display=swap" rel="stylesheet" />
+  </head>
+  <body class="dark-theme">
+    <!-- Canvas de fondo para la animación (reutiliza el mismo script de background) -->
+    <canvas id="bgCanvas"></canvas>
+    <div class="temporada-overlay">
+      <div class="top-bar">
+        <button id="btn-atras" class="bar-button-atras">Atrás</button>
+      </div>
+      <div class="main-content">
+        <!-- Panel izquierdo: Lista de retos -->
+        <div class="temporada-list" id="temporada-list"></div>
+        <!-- Panel derecho: Detalle del reto -->
+        <div class="temporada-detail" id="temporada-detail"></div>
+      </div>
+    </div>
+    <!-- Scripts de fondo y de Temporada -->
+    <script src="../background/background_blue.js"></script>
+    <script src="temporada.js"></script>
+  </body>
+</html>

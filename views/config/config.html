@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Configuración - Grafeno</title>
+    <link rel="stylesheet" href="../../assets/css/config.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Courier+Prime&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body class="dark-theme">
+    <!-- Canvas de fondo para la animación (reutiliza el mismo script de fondo) -->
+    <canvas id="bgCanvas"></canvas>
+    
+    <div class="config-overlay">
+      <div class="top-bar">
+        <button id="btn-atras" class="bar-button-atras">Atrás</button>
+        <h1 class="navbar-title">Configuración</h1>
+      </div>
+      <div class="config-content">
+        <!-- Sección: Descargas de ficheros -->
+        <section class="config-section">
+          <h1>Descargas de ficheros</h1>
+          <p class="section-info">
+            Especifica la ubicación en la que deseas que se guarden los archivos descargados de los retos.
+            Si no se especifica, se guardarán en la carpeta de descargas por defecto.
+          </p>
+          <input type="text" id="destinationInput" placeholder="Ruta de destino (por defecto: Descargas)" />
+        </section>
+        <!-- Sección: Reseteo de información -->
+        <section class="config-section">
+          <h1>Reseteo de información</h1>
+          <p class="section-info">
+            Pulsa el botón para resetear todos los datos de la aplicación. El proceso se mostrará a la derecha.
+          </p>
+          <div class="reset-container">
+            <button id="btn-reset" class="reset-button">Resetear datos</button>
+            <span id="reset-status" class="reset-status"></span>
+          </div>
+        </section>
+      </div>
+    </div>
+    
+    <script src="../background/background.js"></script>
+    <script src="config.js"></script>
+  </body>
+</html>
