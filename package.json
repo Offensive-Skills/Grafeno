@@ -1,6 +1,6 @@
 {
   "name": "grafeno",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "Aplicación para despliegue de entornos simulados de pentesting",
   "main": "main.js",
   "scripts": {
@@ -19,14 +19,14 @@
     "email": "contacto@offs.es"
   },
   "license": "SEE LICENSE IN LICENSE",
-  "devDependencies": {
-    "@electron/remote": "^2.1.2",
-    "electron": "^25.9.8",
-    "electron-builder": "^25.1.8"
-  },
   "dependencies": {
+    "@electron/remote": "^2.1.2",
     "electron-updater": "^6.3.9",
     "qr-code-styling": "^1.9.1"
+  },
+  "devDependencies": {
+    "electron": "^25.9.8",
+    "electron-builder": "^25.1.8"
   },
   "repository": {
     "type": "git",
@@ -39,6 +39,10 @@
   "build": {
     "appId": "com.offensiveskills.grafeno",
     "productName": "Grafeno",
+    "asar": true,
+    "asarUnpack": [
+      "scripts/**"
+    ],
     "publish": [
       {
         "provider": "github",
