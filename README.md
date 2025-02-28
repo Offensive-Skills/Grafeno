@@ -33,25 +33,22 @@ sudo apt install npm
 Descargamos la herramienta:
 ```
 git clone https://github.com/Offensive-Skills/Grafeno.git
+cd Grafeno/
 ```
 
 Una vez esta listo, debemos instalar la herramienta:
 
-1. Inicializamos el entornos
+**Inicializamos el entornos instalando las dependencias**
 ```
-npm init -i # Esto solo se ejecuta una vez para inicializar
+npm install
 ```
 
-2. Descargamos dependencias y paquetes necesarios
-```
-npm install --save-dev electron electron-builder @electron/remote
-```
 
 # Ejecución
 
 Para poder ejecutar la herramienta, debemos ejecutar el siguiente comando
 ```
-npm start
+npm run start
 ```
 
 > ***Nota Importante***
