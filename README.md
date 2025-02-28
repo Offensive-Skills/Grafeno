@@ -17,7 +17,7 @@ La instalación de Grafeno es sencilla, ya que únicamente requiere que tengas *
 > sudo ./setup_docker.sh
 > ```
 >
-> O **sigue las instrucciones en [la documentación de Docker]**(https://docs.docker.com/get-docker/).
+> O **sigue las instrucciones en [la documentación de Docker](https://docs.docker.com/get-docker/)**.
 
 
 Lo siguiente es actualizar nuestro repositorio de paquetes
@@ -56,13 +56,13 @@ npm start
 
 > ***Nota Importante***
 > Necesitamos tener **credenciales** válidas para poer acceder a Grafeno
-> Para poder conseguirlas, solo tendremos que acceder a la página de [Offensive Skills](https://offs.es), registrarnos, y acceder a la [página de gestión de `API Tokens`](https://offs.es/escritorio/api-token)
+> Para poder conseguirlas, solo tendremos que acceder a la página de [Offensive Skills](https://offs.es), [registrarnos](https://offs.es/escritorio), y acceder a la [página de gestión de `API Tokens`](https://offs.es/escritorio/api-token)
 
 Ahora ya estamos preparados para iniciar sesión
 
 **Campos solicitados**:
 - `usuario`: es tu nombre de usuario (que has creado en [Offensive Skills](https://offs.es/escritorio))
-- `api-token`: es el token asociado a tu cuenta - Encuéntralo en [la página de `API Tokens`].
+- `api-token`: es el token asociado a tu cuenta - Encuéntralo en [la página de `API Tokens`](https://offs.es/escritorio/api-token).
 
 
 # Notas adicionales
