@@ -3,7 +3,7 @@
 
 ![image](./images/Grafeno.png)
 
-Grafeno es una herramienta de automatización para el despliegue de entornos destinados a retos de **pentesting** y pruebas de penetración. Con Grafeno, tendrás acceso a centenares de desafíos de ciberseguridad, tanto de manera individual como en el marco de los cursos ofrecidos en la plataforma [offs.es](https://offs.es).
+Grafeno es una herramienta de automatización para el despliegue de entornos destinados a retos de **pentesting** y pruebas de penetración. Con Grafeno, tendrás acceso a centenares de desafíos de ciberseguridad, tanto de manera individual como en el marco de los cursos ofrecidos en la plataforma de [`Offensive Skills`](https://offs.es).
 
 > Todos los entornos de prueba se despliegan localmente, lo que te permite realizar pruebas de penetración offline y perfeccionar tus **skills** en **ciberseguridad**.
 
@@ -17,7 +17,7 @@ La instalación de Grafeno es sencilla, ya que únicamente requiere que tengas *
 > sudo ./setup_docker.sh
 > ```
 >
-> O **sigue las instrucciones en [la documentación de Docker](https://docs.docker.com/get-docker/).
+> O **sigue las instrucciones en [la documentación de Docker]**(https://docs.docker.com/get-docker/).
 
 
 Lo siguiente es actualizar nuestro repositorio de paquetes
