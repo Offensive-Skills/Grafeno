@@ -1,6 +1,7 @@
 // views/config/config.js
 const { execFile } = require('child_process');
 const path = require('path');
+const { app, clipboard } = require('@electron/remote'); 
 
 window.addEventListener('DOMContentLoaded', () => {
   const destinationInput = document.getElementById('destinationInput');
@@ -29,11 +30,15 @@ window.addEventListener('DOMContentLoaded', () => {
     window.location.href = '../main/mainMenu.html';
   });
   
-  // Botón Reset: Ejecuta el script para resetear datos y muestra el estado en el HTML
   btnReset.addEventListener('click', () => {
     resetStatus.textContent = 'Eliminando contenido de la aplicación...';
     resetStatus.style.color = '#ffffff';
-    const scriptPath = path.join(__dirname, '..', '..', 'scripts', 'resetData.sh');
+
+    const basePath = app.isPackaged 
+      ? path.join(process.resourcesPath, 'app.asar.unpacked') 
+      : app.getAppPath();
+    const scriptPath = path.join(basePath, 'scripts', 'resetData.sh');
+  
     execFile('bash', [scriptPath], (error, stdout, stderr) => {
       if (error) {
         console.error(`Error al resetear datos: ${error}`);
@@ -46,4 +51,5 @@ window.addEventListener('DOMContentLoaded', () => {
       }
     });
   });
+  
 });

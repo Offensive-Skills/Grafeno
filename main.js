@@ -2,11 +2,23 @@
 const { app, BrowserWindow, ipcMain, dialog } = require('electron');
 const remoteMain = require('@electron/remote/main');
 const path = require('path');
+const { exec } = require('child_process');
 const { autoUpdater } = require('electron-updater');
 
 remoteMain.initialize();
 
 let mainWindow;
+
+function checkDockerInstalled() {
+  return new Promise((resolve, reject) => {
+    exec('docker --version', (error, stdout, stderr) => {
+      if (error) {
+        return reject(new Error('Docker no está instalado o no se encontró.'));
+      }
+      resolve();
+    });
+  });
+}
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -22,7 +34,14 @@ function createWindow() {
     }
   });
 
-  mainWindow.loadFile(path.join(__dirname, 'views/login', 'login.html'));
+  checkDockerInstalled()
+    .then(() => {
+      mainWindow.loadFile(path.join(__dirname, 'views', 'login', 'login.html'));
+    })
+    .catch((err) => {
+      console.error(err);
+      mainWindow.loadFile(path.join(__dirname, 'views', 'error', 'error.html'));
+    });
 
   // Abre las DevTools para ver logs y errores
   //mainWindow.webContents.openDevTools();
@@ -80,3 +99,10 @@ app.on('activate', () => {
 ipcMain.on('login-success', () => {
   mainWindow.loadFile(path.join(__dirname, 'views/main', 'mainMenu.html'));
 });
+
+
+ipcMain.on('close-app', () => {
+  app.quit();
+});
+
+

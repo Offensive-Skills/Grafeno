@@ -1,10 +1,11 @@
 // modules/DockerManager.js
 const { execFile } = require('child_process');
 const path = require('path');
+const { app, clipboard } = require('@electron/remote'); 
 
 class DockerManager {
   constructor() {
-    this.dockerState = {}; // key: challengeName+challengeVersion, value: state
+    this.dockerState = {}; 
     this.checkInterval = null;
   }
   
@@ -55,7 +56,6 @@ class DockerManager {
     // Copiar IP al hacer click
     containerIpSpan.addEventListener('click', () => {
       if (containerIpSpan.textContent.trim() !== 'Inactive') {
-        const { clipboard } = require('electron');
         clipboard.writeText(containerIpSpan.textContent.trim());
         console.log('IP copiada:', containerIpSpan.textContent.trim());
       }
@@ -129,17 +129,31 @@ class DockerManager {
   
   runDockerScript(title, version, mode) {
     return new Promise((resolve, reject) => {
-      const scriptPath = path.join(__dirname, '..', '..', '..', 'scripts', 'containerManager.sh');
+      // Si la aplicación está empaquetada, usamos el directorio desempaquetado; en desarrollo, la raíz del proyecto
+      const basePath = app.isPackaged 
+        ? path.join(process.resourcesPath, 'app.asar.unpacked') 
+        : app.getAppPath();
+      const scriptPath = path.join(basePath, 'scripts', 'containerManager.sh');
+      
       const domain = 'harbor.offs.es/challenges/';
       execFile('bash', [scriptPath, domain, title, version, mode], (error, stdout, stderr) => {
-        if (error) reject(error);
-        else resolve(stdout);
+        if (error) {
+          reject(error);
+        } else {
+          resolve(stdout);
+        }
       });
     });
   }
   
+  
   checkContainerIp(title, version, ipElement) {
-    const scriptPath = path.join(__dirname,'..', '..', '..','scripts', 'checkContainer.sh');
+    // Mismo manejo de rutas: producción apunta a la carpeta desempaquetada, en desarrollo a la raíz del proyecto.
+    const basePath = app.isPackaged 
+      ? path.join(process.resourcesPath, 'app.asar.unpacked') 
+      : app.getAppPath();
+    const scriptPath = path.join(basePath, 'scripts', 'checkContainer.sh');
+    
     execFile('bash', [scriptPath, title, version], (error, stdout, stderr) => {
       if (error) {
         console.error('Error al ejecutar checkContainer.sh:', error);
@@ -150,6 +164,7 @@ class DockerManager {
       }
     });
   }
+  
 }
 
 module.exports = DockerManager;
