@@ -1,6 +1,6 @@
 {
   "name": "grafeno",
-  "version": "1.0.4",
+  "version": "1.0.1",
   "description": "Aplicación para despliegue de entornos simulados de pentesting",
   "main": "main.js",
   "scripts": {
@@ -62,7 +62,7 @@
         "deb"
       ],
       "category": "Utility",
-      "icon": "assets/icons/app-icon.png"
+      "icon": "assets/image/logo_grafeno.png"
     }
   }
 }
