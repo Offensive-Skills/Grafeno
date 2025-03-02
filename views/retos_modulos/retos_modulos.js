@@ -1,5 +1,5 @@
 // views/retos_modulos.js
-const { ipcRenderer } = require('electron');
+
 const RetosList = require('./retos_js/RetosList');
 const RetosDetail = require('./retos_js/RetosDetail');
 const DockerManager = require('./retos_js/DockerManager');

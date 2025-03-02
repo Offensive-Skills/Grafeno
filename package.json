@@ -1,10 +1,11 @@
 {
   "name": "grafeno",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Aplicación para despliegue de entornos simulados de pentesting",
   "main": "main.js",
   "scripts": {
-    "start": "electron ."
+    "start": "electron .",
+    "dist": "electron-builder --linux deb"
   },
   "keywords": [
     "cibersecurity",
@@ -55,6 +56,13 @@
     ],
     "directories": {
       "buildResources": "build"
+    },
+    "linux": {
+      "target": [
+        "deb"
+      ],
+      "category": "Utility",
+      "icon": "assets/icons/app-icon.png"
     }
   }
 }

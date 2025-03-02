@@ -28,8 +28,9 @@ function createWindow() {
     minHeight: 600,
     title: 'Grafeno',
     backgroundColor: '#2f3136',
+    icon: path.join(__dirname, 'assets', 'images', 'logo_grafeno.png'),
     webPreferences: {
-      nodeIntegration: true, // Habilita nodeIntegration para pruebas
+      nodeIntegration: true, 
       contextIsolation: false
     }
   });
@@ -42,24 +43,20 @@ function createWindow() {
       console.error(err);
       mainWindow.loadFile(path.join(__dirname, 'views', 'error', 'error.html'));
     });
-
-  // Abre las DevTools para ver logs y errores
   //mainWindow.webContents.openDevTools();
   mainWindow.setMenu(null); // Elimina el menú de la ventana
-  mainWindow.setMenuBarVisibility(false); // Evita que se muestre presionando Alt
+  mainWindow.setMenuBarVisibility(false);
   remoteMain.enable(mainWindow.webContents);
 
   mainWindow.on('closed', () => {
     mainWindow = null;
   });
 
-  // Inicia la comprobación de actualizaciones al crear la ventana
   autoUpdater.checkForUpdatesAndNotify();
 }
 
 // Configuración de los eventos de autoUpdater
 
-// Cuando se detecta que hay una actualización disponible
 autoUpdater.on('update-available', (info) => {
   console.log('Actualización disponible:', info);
 });
