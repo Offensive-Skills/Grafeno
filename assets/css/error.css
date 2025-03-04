@@ -1,0 +1,72 @@
+/* Fuente y fondo general */
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Courier Prime', Courier, monospace;
+    background-color: #2f3136;
+    overflow: hidden;
+  }
+  
+  /* Canvas de fondo animado */
+  canvas#bgCanvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 0;
+    width: 100%;
+    height: 100%;
+  }
+  
+  /* Overlay que oscurece el fondo y centra el mensaje de error */
+  .error-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 10; /* Superior al canvas */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.5); /* Crea contraste para legibilidad */
+  }
+  
+  /* Contenedor del mensaje de error */
+  .error-container {
+    background: rgba(43, 43, 43, 0.9);
+    border: 2px solid #beefbe;
+    border-radius: 10px;
+    padding: 30px;
+    text-align: center;
+    max-width: 500px;
+  }
+  
+  /* Estilos para el título y párrafos */
+  .error-container h1 {
+    margin-bottom: 20px;
+    color: #beefbe;
+  }
+  
+  .error-container p {
+    margin-bottom: 30px;
+    font-size: 16px;
+    color: #beefbe;
+  }
+  
+  /* Estilos para el botón */
+  .error-container button {
+    padding: 10px 20px;
+    font-size: 16px;
+    border: none;
+    border-radius: 5px;
+    background-color: #beefbe;
+    color: #2f3136;
+    cursor: pointer;
+    transition: background-color 0.3s, color 0.3s;
+  }
+  
+  .error-container button:hover {
+    background-color: #2f3136;
+    color: #beefbe;
+  }
+  

@@ -1,5 +1,5 @@
 // views/temporada/temporada.js
-const { ipcRenderer } = require('electron');
+
 const api = require('../../controllers/apiEndpoints'); // Reutilizamos si es idéntico
 const RetosList = require('../retos/retos_js/RetosList'); // Reutilizamos la lista de retos
 const TemporadaDetail = require('./temporada_js/TemporadaDetail');

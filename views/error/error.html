@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8">
+    <title>Grafeno - Error</title>
+    <link rel="stylesheet" href="../../assets/css/error.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Courier+Prime&display=swap" rel="stylesheet">
+  </head>
+  <body>
+    <!-- Canvas de fondo animado -->
+    <canvas id="bgCanvas"></canvas>
+
+    <!-- Contenedor overlay para el error -->
+    <div class="error-overlay">
+      <div class="error-container">
+        <h1>Error de configuración</h1>
+        <p>Docker no está instalado o el usuario no tiene los permisos necesarios para ejecutarlo.</p>
+        <button id="closeButton">Cerrar</button>
+      </div>
+    </div>
+
+    <!-- Script para el fondo animado -->
+    <script src="../background/background.js"></script>
+    <script>
+      const { ipcRenderer } = require('electron');
+      document.getElementById('closeButton').addEventListener('click', () => {
+        ipcRenderer.send('close-app');
+      });
+    </script>
+  </body>
+</html>
