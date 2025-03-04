@@ -1,25 +1,40 @@
 #!/bin/bash
-
 # setup.sh - Script de instalación para la aplicación Grafeno, de Offensive Skills
 
-# Qué hace este script:
-# - Instala Docker en el equipo
-# - Añade al usuario actual al grupo 'docker'
+# Descripción:
+# - Instala Docker en el equipo.
+# - Añade al usuario actual al grupo 'docker'.
+# - Mejora la visualización de los mensajes para facilitar la lectura y el seguimiento del proceso.
 
-# Función para mostrar mensajes informativos
+set -e  # Detiene el script ante cualquier error
+
+# Funciones para formatear la salida
 function echo_info() {
     echo -e "\e[34m[INFO]\e[0m $1"
 }
 
-# Función para mostrar mensajes de éxito
 function echo_success() {
     echo -e "\e[32m[SUCCESS]\e[0m $1"
 }
 
-# Función para mostrar mensajes de error
 function echo_error() {
     echo -e "\e[31m[ERROR]\e[0m $1"
 }
+
+function print_separator() {
+    echo -e "\e[90m------------------------------------------------------------\e[0m"
+}
+
+function print_banner() {
+    clear
+    echo -e "\e[35m==================================================="
+    echo -e "      Instalador de Grafeno - Offensive Skills"
+    echo -e "===================================================\e[0m"
+    echo
+}
+
+# Mostrar banner inicial
+print_banner
 
 # Verificar si se está ejecutando como root
 if [ "$EUID" -ne 0 ]; then
@@ -27,12 +42,7 @@ if [ "$EUID" -ne 0 ]; then
     exit 1
 fi
 
-# Función para verificar si un comando existe
-function command_exists() {
-    command -v "$1" >/dev/null 2>&1
-}
-
-# Identificar el usuario no root que invocó sudo
+# Detectar el usuario no root que invocó sudo
 if [ -n "$SUDO_USER" ] && [ "$SUDO_USER" != "root" ]; then
     USER_NAME="$SUDO_USER"
     USER_HOME=$(getent passwd "$USER_NAME" | cut -d: -f6)
@@ -41,64 +51,47 @@ else
     exit 1
 fi
 
-echo_info "Usuario identificado: $USER_NAME con directorio home en $USER_HOME"
+print_separator
+echo_info "Usuario identificado: $USER_NAME"
+echo_info "Directorio home: $USER_HOME"
 
 # Detectar el directorio del script
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-echo_info "Directorio del script detectado: $SCRIPT_DIR"
+echo_info "Directorio del script: $SCRIPT_DIR"
+print_separator
 
+# Función para verificar si un comando existe
+function command_exists() {
+    command -v "$1" >/dev/null 2>&1
+}
 
-# Instalar Docker
+# Paso 1: Instalación de Docker
+echo_info "Verificando instalación de Docker..."
 if command_exists docker; then
-    echo_success "Docker ya está instalado."
+    echo_success "Docker ya está instalado en el sistema."
 else
     OS=$(lsb_release -is)
     if [ "$OS" = "Kali" ]; then
         echo_info "Instalando Docker en Kali Linux..."
-
         apt-get install -y ca-certificates curl
-
         install -m 0755 -d /etc/apt/keyrings
-
         curl -fsSL https://download.docker.com/linux/debian/gpg -o /etc/apt/keyrings/docker.asc
-
         chmod a+r /etc/apt/keyrings/docker.asc
-
-        echo \
-            "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/debian \
-            bookworm stable" | \
-            sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-
-        # Actualizamos
-        apt-get update -y
-
-        # Instalamos Docker Engine
-        apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
-
+        echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/debian bookworm stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
     else
         echo_info "Instalando Docker para Ubuntu..."
-
-        # Actualizar el índice de paquetes e instalar paquetes necesarios para usar el repositorio HTTPS
         apt-get install -y ca-certificates curl
-
-        # Crear el directorio /etc/apt/keyrings
-        install -m 0755 -d /etc/apt/keyrings        
-
-        # Añadir la clave GPG oficial de Docker
+        install -m 0755 -d /etc/apt/keyrings
         curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
         chmod a+r /etc/apt/keyrings/docker.asc
-        
-        echo \
-            "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
-            $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
-            sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-
-        # Actualizar el índice de paquetes
-        apt-get update -y
-
-        # Instalar Docker Engine
-        apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+        echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
     fi
+
+    echo_info "Actualizando índices de paquetes..."
+    apt-get update -y
+
+    echo_info "Instalando Docker Engine y componentes..."
+    apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
     # Verificar la instalación de Docker
     if command_exists docker; then
@@ -108,21 +101,25 @@ else
         exit 1
     fi
 fi
+print_separator
 
-# 4. Añadir el usuario al grupo docker
+# Paso 2: Añadir el usuario al grupo docker
+echo_info "Verificando si el usuario '$USER_NAME' ya pertenece al grupo 'docker'..."
 if id -nG "$USER_NAME" | grep -qw "docker"; then
     echo_success "El usuario '$USER_NAME' ya está en el grupo 'docker'."
 else
     echo_info "Añadiendo al usuario '$USER_NAME' al grupo 'docker'..."
     usermod -aG docker "$USER_NAME"
+    # Comprobación tras añadir
     if id -nG "$USER_NAME" | grep -qw "docker"; then
         echo_success "Usuario '$USER_NAME' añadido al grupo 'docker' correctamente."
-
-        # Informar al usuario que debe aplicar los cambios de grupo
-        echo_info "Para aplicar los cambios en el grupo 'docker' sin reiniciar, ejecuta 'newgrp docker' en tu terminal actual."
-        echo_info "Si prefieres, puedes cerrar sesión y volver a iniciarla."
+        echo_info "Para aplicar los cambios sin reiniciar, ejecuta 'newgrp docker' en tu terminal actual."
+        echo_info "O cierra sesión y vuelve a iniciarla."
     else
         echo_error "Fallo al añadir el usuario '$USER_NAME' al grupo 'docker'."
-        echo_info "Por favor, cierra la sesión y vuelve a iniciarla para que los cambios surtan efecto."
+        echo_info "Intenta cerrar la sesión y volver a iniciarla para que los cambios surtan efecto."
     fi
 fi
+print_separator
+
+echo_success "Instalación completada. ¡Listo para usar Grafeno!"
