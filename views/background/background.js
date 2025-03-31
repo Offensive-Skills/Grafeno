@@ -3,13 +3,12 @@
 const canvas = document.getElementById('bgCanvas');
 const ctx = canvas.getContext('2d');
 let particles = [];
-const NUM_PARTICLES = 40;  // Cantidad de nodos del fondo
-const MAX_DIST = 120;      // Distancia máxima para trazar línea
+const NUM_PARTICLES = 40;  
+const MAX_DIST = 120;      
 
 function resizeCanvas() {
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
-  // Re-inicializamos las partículas para que se ajusten al nuevo tamaño
   initParticles();
 }
 

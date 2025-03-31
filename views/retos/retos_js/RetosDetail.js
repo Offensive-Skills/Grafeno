@@ -1,5 +1,6 @@
 // modules/RetosDetail.js
 const { clipboard } = require('electron');
+const path = require('path');
 const api = require('../../../controllers/apiEndpoints');
 
 class RetosDetail {
