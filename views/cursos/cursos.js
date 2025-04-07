@@ -1,16 +1,13 @@
 // views/cursos/cursos.js
+const api = require('../../controllers/apiEndpoints');
+
 const RetosApi = {
     // Función para obtener cursos usando fetch; se asume que la BASE_URL está definida en ApiEndpoints.js (o se usa directamente la URL)
     async getCourses({ token }) {
-      const response = await fetch('https://api.offs.es/get_courses', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token })
-      });
-      if (!response.ok) {
-        throw new Error(`Error HTTP: ${response.status}`);
-      }
-      return await response.json();
+
+      const cursos = await api.getCourses({ token });
+      return cursos;
+
     }
   };
   

@@ -1,16 +1,13 @@
 // views/modulos/modulos.js
+const api = require('../../controllers/apiEndpoints');
+
 // Función para enviar la petición POST para obtener los módulos de un curso
-async function getModules({ token, courseID }) {
-    const response = await fetch('https://api.offs.es/get_modules', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ token, courseID })
-    });
-    if (!response.ok) {
-      throw new Error(`Error HTTP: ${response.status}`);
-    }
-    return await response.json();
-  }
+  async function getModules({ token, courseID }) {
+
+  const modulos = await api.getModules({ token, courseID});
+
+   return modulos;
+ }
   
   window.addEventListener('DOMContentLoaded', async () => {
     const btnAtras = document.getElementById('btn-atras');

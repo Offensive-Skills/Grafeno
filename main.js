@@ -43,7 +43,7 @@ function createWindow() {
       console.error(err);
       mainWindow.loadFile(path.join(__dirname, 'views', 'error', 'error.html'));
     });
-  //mainWindow.webContents.openDevTools();
+  mainWindow.webContents.openDevTools();
   mainWindow.setMenu(null); // Elimina el menú de la ventana
   mainWindow.setMenuBarVisibility(false);
   remoteMain.enable(mainWindow.webContents);
