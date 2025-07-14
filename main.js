@@ -13,7 +13,7 @@ function checkDockerInstalled() {
   return new Promise((resolve, reject) => {
     exec('docker --version', (error, stdout, stderr) => {
       if (error) {
-        return reject(new Error('Docker no está instalado o no se encontró.'));
+        return reject(new Error('Docker no está instalado o no se encontró. Puedes instalar Docker usando el script de https://github.com/Offensive-Skills/Grafeno/blob/main/setup_docker.sh (para Ubuntu y Kali Linux)'));
       }
       resolve();
     });
