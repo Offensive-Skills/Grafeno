@@ -6,10 +6,15 @@ on:
       - 'v*'
   workflow_dispatch:
 
+# Necesario para que el GITHUB_TOKEN pueda crear subidas/releases
+permissions:
+  contents: write
+
 jobs:
   linux:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         arch: [x64, arm64]
 
@@ -37,12 +42,9 @@ jobs:
             npm ci
           fi
 
-      # Si usas addons nativos, descomenta:
-      - name: Rebuild native modules for target arch
-        run: npx electron-rebuild -f -a ${{ matrix.arch }}
-
+      # Empaquetar SIN publicar
       - name: Build linux ${{ matrix.arch }}
-        run: npx electron-builder --linux deb AppImage rpm --${{ matrix.arch }}
+        run: npx electron-builder -p never --linux deb AppImage rpm --${{ matrix.arch }}
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
@@ -50,7 +52,7 @@ jobs:
           name: linux-${{ matrix.arch }}
           path: dist/*
 
-      # Publicación a GitHub Releases si "publish" está en package.json:
+      # Publica solo aquí (con token)
       - name: Publish to GitHub Releases
         if: startsWith(github.ref, 'refs/tags/')
         run: npx electron-builder -p always --linux deb AppImage rpm --${{ matrix.arch }}
@@ -58,7 +60,8 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   mac:
-    runs-on: macos-14 # Apple Silicon runner → arm64 nativo
+    runs-on: macos-14
+
     steps:
       - uses: actions/checkout@v4
 
@@ -70,16 +73,12 @@ jobs:
       - name: Validate package.json
         run: node -e "JSON.parse(require('fs').readFileSync('package.json','utf8'))"
 
-
       - name: Install npm deps
         run: npm ci
 
-      # Si usas addons nativos, descomenta:
-      - name: Rebuild native modules for arm64
-        run: npx electron-rebuild -f -a arm64
-
+      # Empaquetar SIN publicar
       - name: Build macOS arm64 dmg
-        run: npx electron-builder --mac dmg --arm64
+        run: npx electron-builder -p never --mac dmg --arm64
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
@@ -87,6 +86,7 @@ jobs:
           name: mac-arm64
           path: dist/*
 
+      # Publica solo aquí (con token)
       - name: Publish to GitHub Releases
         if: startsWith(github.ref, 'refs/tags/')
         run: npx electron-builder -p always --mac dmg --arm64
