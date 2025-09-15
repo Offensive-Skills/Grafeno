@@ -27,7 +27,7 @@ jobs:
           sudo apt-get install -y rpm libarchive-tools
 
       - name: Validate package.json
-      run: node -e "JSON.parse(require('fs').readFileSync('package.json','utf8'))"
+        run: node -e "JSON.parse(require('fs').readFileSync('package.json','utf8'))"
 
       - name: Install npm deps (matrix arch-aware)
         run: |
@@ -68,7 +68,7 @@ jobs:
           cache: 'npm'
 
       - name: Validate package.json
-      run: node -e "JSON.parse(require('fs').readFileSync('package.json','utf8'))"
+        run: node -e "JSON.parse(require('fs').readFileSync('package.json','utf8'))"
 
 
       - name: Install npm deps
