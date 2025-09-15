@@ -1,27 +1,26 @@
 {
   "name": "grafeno",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "Aplicación para despliegue de entornos simulados de pentesting",
   "main": "main.js",
+
   "scripts": {
     "start": "electron .",
-    "dist:deb": "electron-builder --linux deb",
-    "dist:mac": "electron-builder --mac",
-    "dist:rpm": "electron-builder --linux rpm"
+
+    // ── Builds locales (opcionales si usarás solo CI):
+    "dist:linux:x64": "electron-builder --linux deb appimage rpm --x64",
+    "dist:linux:arm64": "electron-builder --linux deb appimage rpm --arm64",
+    "dist:mac:arm64": "electron-builder --mac dmg --arm64",
+
+    // Build genérico (usa config build de abajo)
+    "dist": "electron-builder"
   },
-  "keywords": [
-    "cibersecurity",
-    "ciberseguridad",
-    "pentesting",
-    "red team",
-    "hack",
-    "hacking"
-  ],
-  "author": {
-    "name": "Offensive Skills",
-    "email": "contacto@offs.es"
-  },
+
+  "keywords": ["cibersecurity","ciberseguridad","pentesting","red team","hack","hacking"],
+
+  "author": { "name": "Offensive Skills", "email": "contacto@offs.es" },
   "license": "SEE LICENSE IN LICENSE",
+
   "dependencies": {
     "@electron/remote": "^2.1.2",
     "electron-updater": "^6.3.9",
@@ -31,42 +30,50 @@
     "electron": "^25.9.8",
     "electron-builder": "^25.1.8"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/Offensive-Skills/Grafeno.git"
-  },
-  "bugs": {
-    "url": "https://github.com/Offensive-Skills/Grafeno/issues"
-  },
+
+  "repository": { "type": "git", "url": "git+https://github.com/Offensive-Skills/Grafeno.git" },
+  "bugs": { "url": "https://github.com/Offensive-Skills/Grafeno/issues" },
   "homepage": "https://github.com/Offensive-Skills/Grafeno#readme",
+
   "build": {
     "appId": "com.offensiveskills.grafeno",
     "productName": "Grafeno",
+
     "asar": true,
-    "asarUnpack": [
-      "scripts/**"
-    ],
+    "asarUnpack": ["scripts/**"],
+
+    // Publicación automática a GitHub Releases (opcional).
+    // Si no quieres publicar automáticamente y solo subir artefactos al job, puedes quitar "publish".
     "publish": [
-      {
-        "provider": "github",
-        "owner": "Offensive-Skills",
-        "repo": "Grafeno"
-      }
+      { "provider": "github", "owner": "Offensive-Skills", "repo": "Grafeno" }
     ],
+
+    // Controla exactamente qué entra en el bundle
     "files": [
-      "**/*"
+      "main.js",
+      "controllers/**",
+      "views/**",
+      "assets/**",
+      "scripts/**",
+      "package.json"
     ],
-    "directories": {
-      "buildResources": "build"
-    },
+
+    "directories": { "buildResources": "build" },
+
+    // ── Linux
     "linux": {
-      "target": [
-        "deb",
-        "rpm",
-        "appimage"
-      ],
+      "target": ["deb", "rpm", "AppImage"],
       "category": "Utility",
-      "icon": "assets/images/logo_grafeno.png"
+      "icon": "assets/images/logo_grafeno.png",
+      "artifactName": "grafeno_${version}_${arch}.${ext}"
+    },
+
+    // ── macOS (arm64)
+    "mac": {
+      "target": ["dmg"],
+      "category": "public.app-category.utilities",
+      "artifactName": "grafeno_${version}_mac_${arch}.${ext}"
     }
   }
 }
+

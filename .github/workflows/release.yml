@@ -1,0 +1,88 @@
+name: Build releases
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  linux:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        arch: [x64, arm64]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install system deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y rpm libarchive-tools
+
+      - name: Install npm deps (matrix arch-aware)
+        run: |
+          if [ "${{ matrix.arch }}" = "arm64" ]; then
+            npm ci --arch=arm64
+          else
+            npm ci
+          fi
+
+      # Si usas addons nativos, descomenta:
+      # - name: Rebuild native modules for target arch
+      #   run: npx electron-rebuild -f -a ${{ matrix.arch }}
+
+      - name: Build linux ${{ matrix.arch }}
+        run: npx electron-builder --linux deb AppImage rpm --${{ matrix.arch }}
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-${{ matrix.arch }}
+          path: dist/*
+
+      # Publicación a GitHub Releases si "publish" está en package.json:
+      - name: Publish to GitHub Releases
+        if: startsWith(github.ref, 'refs/tags/')
+        run: npx electron-builder -p always --linux deb AppImage rpm --${{ matrix.arch }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  mac:
+    runs-on: macos-14 # Apple Silicon runner → arm64 nativo
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install npm deps
+        run: npm ci
+
+      # Si usas addons nativos, descomenta:
+      # - name: Rebuild native modules for arm64
+      #   run: npx electron-rebuild -f -a arm64
+
+      - name: Build macOS arm64 dmg
+        run: npx electron-builder --mac dmg --arm64
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: mac-arm64
+          path: dist/*
+
+      - name: Publish to GitHub Releases
+        if: startsWith(github.ref, 'refs/tags/')
+        run: npx electron-builder -p always --mac dmg --arm64
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
