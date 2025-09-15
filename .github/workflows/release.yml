@@ -26,6 +26,9 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y rpm libarchive-tools
 
+      - name: Validate package.json
+      run: node -e "JSON.parse(require('fs').readFileSync('package.json','utf8'))"
+
       - name: Install npm deps (matrix arch-aware)
         run: |
           if [ "${{ matrix.arch }}" = "arm64" ]; then
@@ -35,8 +38,8 @@ jobs:
           fi
 
       # Si usas addons nativos, descomenta:
-      # - name: Rebuild native modules for target arch
-      #   run: npx electron-rebuild -f -a ${{ matrix.arch }}
+      - name: Rebuild native modules for target arch
+        run: npx electron-rebuild -f -a ${{ matrix.arch }}
 
       - name: Build linux ${{ matrix.arch }}
         run: npx electron-builder --linux deb AppImage rpm --${{ matrix.arch }}
@@ -64,12 +67,16 @@ jobs:
           node-version: '20'
           cache: 'npm'
 
+      - name: Validate package.json
+      run: node -e "JSON.parse(require('fs').readFileSync('package.json','utf8'))"
+
+
       - name: Install npm deps
         run: npm ci
 
       # Si usas addons nativos, descomenta:
-      # - name: Rebuild native modules for arm64
-      #   run: npx electron-rebuild -f -a arm64
+      - name: Rebuild native modules for arm64
+        run: npx electron-rebuild -f -a arm64
 
       - name: Build macOS arm64 dmg
         run: npx electron-builder --mac dmg --arm64
