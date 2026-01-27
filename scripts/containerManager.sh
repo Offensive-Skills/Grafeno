@@ -21,9 +21,9 @@ stop_and_remove_container() {
 
 # Función para crear y ejecutar un contenedor
 create_and_run_container() {
-    docker pull "$1" > /dev/null 
+    docker pull "$1" 
     wait $!  # Espera a que el comando `docker pull` termine
-    docker run -d --name "$2" "$1" > /dev/null 
+    docker run -d --name "$2" "$1" 
     wait $!  # Espera a que el comando `docker run` termine
 }
 
@@ -51,7 +51,8 @@ case $MODE in
             create_and_run_container "$FULL_URI" "$CONTAINER_NAME"
         else
             # Contenedor no existe, crear y ejecutar
-            create_and_run_container "$FULL_URI" "$CONTAINER_NAME"
+            docker pull "$FULL_URI" 
+            docker run -d --name "$CONTAINER_NAME" "$FULL_URI"
         fi
         ;;
     1) # Detener contenedor
