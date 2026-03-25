@@ -1,2 +1,9 @@
+### Git Ignore Files
+
+# Node generated files
 node_modules/
 dist/
+
+# Nix Direnv generated directory
+.direnv
+direnv.local
