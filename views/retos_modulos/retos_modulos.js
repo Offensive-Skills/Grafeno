@@ -1,8 +1,5 @@
 // views/retos_modulos.js
 
-const RetosList = require('./retos_js/RetosList');
-const RetosDetail = require('./retos_js/RetosDetail');
-const DockerManager = require('./retos_js/DockerManager');
 const api_token = localStorage.getItem('apiToken');
 
 let currentChallenges = [];
@@ -10,22 +7,13 @@ let selectedChallenge = null;
 const dockerManager = new DockerManager();
 
 window.addEventListener('DOMContentLoaded', async () => {
-  // Obtener el ID del módulo
-  const module_id = localStorage.getItem('currentModuleId');
-  if (!module_id) {
-    alert('No se ha definido el module_id');
-    return;
-  }
-  await fetchChallenges(module_id);
-});
-
-window.addEventListener('DOMContentLoaded', async () => {
   // Listener para el botón de atrás
   const btnAtras = document.getElementById('btn-atras');
   btnAtras.addEventListener('click', () => {
     window.location.href = '../modulos/modulos.html';
   });
-  
+
+  // Obtener el ID del módulo
   const module_id = localStorage.getItem('currentModuleId');
   if (!module_id) {
     alert('No se ha definido el module_id');
@@ -37,7 +25,6 @@ window.addEventListener('DOMContentLoaded', async () => {
 
 async function fetchChallenges(module_id) {
   try {
-    const api = require('../../controllers/apiEndpoints');
     // Llamada para obtener retos asociados al módulo
     currentChallenges = await api.getChallengesModules({token: api_token, moduleID: module_id});
     

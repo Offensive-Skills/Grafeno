@@ -1,13 +1,9 @@
 // views/modulos/modulos.js
-const api = require('../../controllers/apiEndpoints');
 
-// Función para enviar la petición POST para obtener los módulos de un curso
-  async function getModules({ token, courseID }) {
-
+async function getModules({ token, courseID }) {
   const modulos = await api.getModules({ token, courseID});
-
-   return modulos;
- }
+  return modulos;
+}
   
   window.addEventListener('DOMContentLoaded', async () => {
     const btnAtras = document.getElementById('btn-atras');

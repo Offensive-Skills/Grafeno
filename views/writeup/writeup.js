@@ -2,7 +2,6 @@
 
 const apiToken = localStorage.getItem('apiToken') || 'TU_API_TOKEN';
 const currentChallenge = JSON.parse(localStorage.getItem('currentChallenge') || '{}');
-const api = require('../../controllers/apiEndpoints');
 
 window.addEventListener('DOMContentLoaded', () => {
   const btnAtras = document.getElementById('btn-atras');

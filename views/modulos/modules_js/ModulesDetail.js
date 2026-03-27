@@ -1,6 +1,4 @@
 // views/modules/modules_js/ModulesDetail.js
-const { clipboard } = require('electron');
-const ApiEndpoints = require('../../../controllers/apiEndpoints'); // Si lo necesitas para la URL de descarga
 
 class ModulesDetail {
   constructor(containerId) {
@@ -39,9 +37,29 @@ class ModulesDetail {
       btnDescargarArchivo = document.createElement('button');
       btnDescargarArchivo.classList.add('btn-descargar-archivo');
       btnDescargarArchivo.textContent = 'Descargar archivos del módulo';
-      btnDescargarArchivo.addEventListener('click', () => {
-        const fileURL = ApiEndpoints.buildDownloadFileURL(config.api_token, module.id);
-        window.open(fileURL, '_blank');
+      btnDescargarArchivo.addEventListener('click', async () => {
+        try {
+          const response = await api.getFiles({ token: config.api_token, challengeID: module.id });
+          if (!response.ok) {
+            throw new Error(`Error HTTP: ${response.status}`);
+          }
+          const blob = await response.blob();
+          const arrayBuffer = await blob.arrayBuffer();
+
+          let destFolder = localStorage.getItem('DestinationFile');
+          if (!destFolder) {
+            destFolder = await window.electronAPI.getDownloadsPath();
+          }
+          if (destFolder.startsWith('~')) {
+            const homePath = await window.electronAPI.getHomePath();
+            destFolder = destFolder.replace('~', homePath);
+          }
+
+          const filePath = await window.electronAPI.saveChallenge(destFolder, module.name, arrayBuffer);
+          console.log(`Archivo guardado en: ${filePath}`);
+        } catch (err) {
+          console.error('Error al descargar archivos:', err);
+        }
       });
     }
     
@@ -95,4 +113,4 @@ class ModulesDetail {
   }
 }
 
-module.exports = ModulesDetail;
+window.ModulesDetail = ModulesDetail;

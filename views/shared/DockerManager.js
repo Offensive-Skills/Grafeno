@@ -1,8 +1,4 @@
-// modules/DockerManager.js
-const { spawn, execFile } = require('child_process');
-const path = require('path');
-const { app, clipboard } = require('@electron/remote');
-
+// shared/DockerManager.js
 class DockerManager {
   constructor() {
     this.dockerState = {};
@@ -59,7 +55,7 @@ class DockerManager {
     // Copiar IP al hacer click
     containerIpSpan.addEventListener('click', () => {
       if (containerIpSpan.textContent.trim() !== 'Inactive') {
-        clipboard.writeText(containerIpSpan.textContent.trim());
+        navigator.clipboard.writeText(containerIpSpan.textContent.trim());
         console.log('IP copiada:', containerIpSpan.textContent.trim());
       }
     });
@@ -70,12 +66,16 @@ class DockerManager {
       loadingSpan.textContent = ' (Iniciando contenedor...)';
       loadingSpan.style.color = '#beefbe';
       loadingSpan.style.display = 'inline';
-      this.runDockerScript(challenge.name, challenge.version, 0, (percent) => {
-        loadingSpan.innerHTML = ''; // Clear content
+      this.runDockerScript(challenge.name, challenge.version, 0, (data) => {
+        loadingSpan.innerHTML = '';
         const spinner = document.createElement('span');
         spinner.classList.add('docker-spinner');
         loadingSpan.appendChild(spinner);
-        loadingSpan.appendChild(document.createTextNode(` (Iniciando contenedor... ${percent}%)`));
+        if (data.phase === 'downloading') {
+          loadingSpan.appendChild(document.createTextNode(` (Descargando imagen... ${data.percent}%)`));
+        } else if (data.phase === 'preparing') {
+          loadingSpan.appendChild(document.createTextNode(` (Preparando contenedor...)`));
+        }
       })
         .then(() => {
           console.log('Contenedor iniciado/reiniciado.');
@@ -114,13 +114,16 @@ class DockerManager {
       loadingSpan.textContent = ' (Iniciando contenedor...)';
       loadingSpan.style.color = '#beefbe';
       loadingSpan.style.display = 'inline';
-      this.runDockerScript(challenge.name, challenge.version, 0, (percent) => {
-        // Re-use logic or keep simple
+      this.runDockerScript(challenge.name, challenge.version, 0, (data) => {
         loadingSpan.innerHTML = '';
         const spinner = document.createElement('span');
         spinner.classList.add('docker-spinner');
         loadingSpan.appendChild(spinner);
-        loadingSpan.appendChild(document.createTextNode(` (Iniciando contenedor... ${percent}%)`));
+        if (data.phase === 'downloading') {
+          loadingSpan.appendChild(document.createTextNode(` (Descargando imagen... ${data.percent}%)`));
+        } else if (data.phase === 'preparing') {
+          loadingSpan.appendChild(document.createTextNode(` (Preparando contenedor...)`));
+        }
       })
         .then(() => {
           console.log('Contenedor reiniciado.');
@@ -144,86 +147,27 @@ class DockerManager {
   }
 
   runDockerScript(title, version, mode, statusCallback) {
-    return new Promise((resolve, reject) => {
-      const basePath = app.isPackaged
-        ? path.join(process.resourcesPath, 'app.asar.unpacked')
-        : app.getAppPath();
-      const scriptPath = path.join(basePath, 'scripts', 'containerManager.sh');
+    const progressHandler = statusCallback
+      ? window.electronAPI.onDockerProgress((data) => { statusCallback(data); })
+      : null;
 
-      const domain = 'harbor.offs.es/challenges/';
-
-      // Use spawn instead of execFile for real-time output
-      const child = spawn('bash', [scriptPath, domain, title, version, mode]);
-
-      let totalLayers = 0;
-      let completedLayers = 0;
-      let layerMap = new Set(); // To track unique layers
-
-      child.stdout.on('data', (data) => {
-        const output = data.toString();
-        // console.log('Docker Output:', output); // Debugging
-
-        // Simple heuristic for progress based on "Pulling fs layer" and "Pull complete" / "Download complete" 
-        // Note: Docker output format can vary. This is a basic estimation.
-
-        const lines = output.split('\n');
-        lines.forEach(line => {
-          // Detect new layer
-          if (line.includes('Pulling fs layer')) {
-            totalLayers++;
-          }
-          // Detect completed layer
-          if (line.includes('Pull complete') || line.includes('Download complete') || line.includes('Already exists')) {
-            completedLayers++;
-          }
-        });
-
-        if (totalLayers > 0 && statusCallback) {
-          // Avoid > 100% just in case
-          let percent = Math.floor((completedLayers / totalLayers) * 100);
-          if (percent > 100) percent = 99; // Cap at 99 until finished
-          statusCallback(percent);
+    return window.electronAPI.runContainer(title, version, mode)
+      .finally(() => {
+        if (progressHandler) {
+          window.electronAPI.removeDockerProgressListener(progressHandler);
         }
       });
-
-      child.stderr.on('data', (data) => {
-        console.error(`Docker STDERR: ${data}`);
-      });
-
-      child.on('close', (code) => {
-        if (code === 0) {
-          if (statusCallback) statusCallback(100); // Ensure we hit 100% on success
-          resolve('Process finished');
-        } else {
-          reject(new Error(`Process exited with code ${code}`));
-        }
-      });
-
-      child.on('error', (err) => {
-        reject(err);
-      });
-    });
   }
 
-
-  checkContainerIp(title, version, ipElement) {
-    // Mismo manejo de rutas: producción apunta a la carpeta desempaquetada, en desarrollo a la raíz del proyecto.
-    const basePath = app.isPackaged
-      ? path.join(process.resourcesPath, 'app.asar.unpacked')
-      : app.getAppPath();
-    const scriptPath = path.join(basePath, 'scripts', 'checkContainer.sh');
-
-    execFile('bash', [scriptPath, title, version], (error, stdout, stderr) => {
-      if (error) {
-        console.error('Error al ejecutar checkContainer.sh:', error);
-        ipElement.textContent = 'Inactive';
-      } else {
-        const ip = stdout.trim();
-        ipElement.textContent = ip === 'Inactive' ? 'Inactive' : ip;
-      }
-    });
+  async checkContainerIp(title, version, ipElement) {
+    try {
+      const ip = await window.electronAPI.checkContainer(title, version);
+      ipElement.textContent = ip === 'Inactive' ? 'Inactive' : ip;
+    } catch (error) {
+      console.error('Error al ejecutar checkContainer:', error);
+      ipElement.textContent = 'Inactive';
+    }
   }
-
 }
 
-module.exports = DockerManager;
+window.DockerManager = DockerManager;

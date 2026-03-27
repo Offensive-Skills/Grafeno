@@ -1,9 +1,5 @@
 // views/temporada/temporada.js
 
-const api = require('../../controllers/apiEndpoints'); // Reutilizamos si es idéntico
-const RetosList = require('../retos/retos_js/RetosList'); // Reutilizamos la lista de retos
-const TemporadaDetail = require('./temporada_js/TemporadaDetail');
-const ContextManager = require('../retos/retos_js/ContextManager');
 const token = localStorage.getItem('apiToken');
 
 let currentChallenges = [];

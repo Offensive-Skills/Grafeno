@@ -1,17 +1,6 @@
 // views/retos.js
-const { ipcRenderer } = require('electron');
-const path = require('path');
-const { clipboard } = require('electron');
 
-
-
-const RetosApi = require('./retos_js/RetosApi');
-const RetosList = require('./retos_js/RetosList');
-const RetosDetail = require('./retos_js/RetosDetail');
-const DockerManager = require('./retos_js/DockerManager');
-const ContextManager = require('./retos_js/ContextManager');
 const api_token = localStorage.getItem('apiToken')
-
 
 let currentChallenges = [];
 let selectedChallenge = null;

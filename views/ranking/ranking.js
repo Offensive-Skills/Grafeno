@@ -13,7 +13,6 @@ window.addEventListener('DOMContentLoaded', async () => {
 
 async function loadRanking() {
   try {
-    const api = require('../../controllers/apiEndpoints');
     // Llamada al endpoint /get_ranking
     const rankingBlob = await api.getRanking();
     const rankingText = await rankingBlob.text();

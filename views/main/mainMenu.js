@@ -1,8 +1,4 @@
-const { ipcRenderer } = require('electron');
-
-const path = require('path');
-const api = require('../../controllers/apiEndpoints'); // Importamos nuestro módulo de API
-
+// views/main/mainMenu.js
 
 window.addEventListener('DOMContentLoaded', () => {
   initMenuButtons();

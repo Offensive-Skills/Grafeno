@@ -1,7 +1,4 @@
-// modules/RetosDetail.js
-const { clipboard } = require('electron');
-const api = require('../../../controllers/apiEndpoints');
-const path = require('path');
+// shared/RetosDetail.js
 
 class RetosDetail {
   constructor(containerId) {
@@ -47,72 +44,45 @@ class RetosDetail {
       btnDescargarArchivo.classList.add('btn-descargar-archivo');
       btnDescargarArchivo.textContent = 'Descargar archivos del reto';
       btnDescargarArchivo.addEventListener('click', async () => {
-        // Seleccionar el contenedor de estado; si no existe, crearlo
         let downloadStatus = document.getElementById('download-status');
         if (!downloadStatus) {
           downloadStatus = document.createElement('div');
           downloadStatus.id = 'download-status';
           downloadStatus.classList.add('download-status');
-          // Insertar justo debajo del botón btn-descargar-archivo
           btnDescargarArchivo.insertAdjacentElement('afterend', downloadStatus);
         }
         
         try {
-          // Llamada al endpoint get_files
           const response = await api.getFiles({ token: token, challengeID: challenge.id });
           if (!response.ok) {
             throw new Error(`Error HTTP: ${response.status}`);
           }
           
-          // Convertir la respuesta a Blob, luego a ArrayBuffer y finalmente a Buffer
           const blob = await response.blob();
           const arrayBuffer = await blob.arrayBuffer();
-          const buffer = Buffer.from(arrayBuffer);
           
-          // Determinar la carpeta destino:
+          // Determinar la carpeta destino
           let destFolder = localStorage.getItem('DestinationFile');
           if (!destFolder) {
-            let app;
-            try {
-              app = require('electron').remote.app;
-            } catch (e) {
-              app = require('@electron/remote').app;
-            }
-            destFolder = app.getPath('downloads');
+            destFolder = await window.electronAPI.getDownloadsPath();
           }
           
           // Expandir ~ si es necesario
           if (destFolder.startsWith('~')) {
-            destFolder = destFolder.replace('~', process.env.HOME);
+            const homePath = await window.electronAPI.getHomePath();
+            destFolder = destFolder.replace('~', homePath);
           }
           
-          const fs = require('fs');
-          // Comprobar si la carpeta destino existe:
-          if (!fs.existsSync(destFolder)) {
-            downloadStatus.textContent = `Error al almacenar el fichero, la carpeta "${destFolder}" indicada en configuración no se ha encontrado.`;
-            downloadStatus.style.color = '#ff4f4f';
-            return;
-          }
-          
-          // Crear una subcarpeta con el nombre del reto (si no existe)
-          const challengeFolder = path.join(destFolder, challenge.name);
-          if (!fs.existsSync(challengeFolder)) {
-            fs.mkdirSync(challengeFolder, { recursive: true });
-          }
-          
-          // Guardar el archivo ZIP en la subcarpeta, con nombre <challenge.name>.zip
-          const filePath = path.join(challengeFolder, `${challenge.name}.zip`);
-          fs.writeFileSync(filePath, buffer);
+          const filePath = await window.electronAPI.saveChallenge(destFolder, challenge.name, arrayBuffer);
           downloadStatus.textContent = `Archivo guardado en: ${filePath}`;
           downloadStatus.style.color = '#beefbe';
         } catch (err) {
           console.error('Error al descargar archivos del reto:', err);
-          downloadStatus.textContent = 'Error al descargar archivos del reto.';
+          const msg = err.message || 'Error al descargar archivos del reto.';
+          downloadStatus.textContent = msg;
           downloadStatus.style.color = '#ff4f4f';
         }
       });
-      
-      
     }
     
     // Sección Docker (si challenge.is_docker)
@@ -160,4 +130,4 @@ class RetosDetail {
   }
 }
 
-module.exports = RetosDetail;
+window.RetosDetail = RetosDetail;

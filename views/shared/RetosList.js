@@ -1,4 +1,4 @@
-// modules/RetosList.js
+// shared/RetosList.js
 class RetosList {
   constructor(containerId) {
     this.container = document.getElementById(containerId);
@@ -21,4 +21,4 @@ class RetosList {
   }
 }
 
-module.exports = RetosList;
+window.RetosList = RetosList;

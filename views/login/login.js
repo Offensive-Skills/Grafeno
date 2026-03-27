@@ -1,7 +1,4 @@
-const { ipcRenderer } = require('electron');
-const { attemptDockerLogin } = require('../../scripts/dockerLogin');
-const QRCodeStyling = require("qr-code-styling");
-const api = require('../../controllers/apiEndpoints'); 
+// views/login/login.js
 
 window.addEventListener('DOMContentLoaded', () => {
   // Generar el código QR en el contenedor
@@ -63,15 +60,20 @@ window.addEventListener('DOMContentLoaded', () => {
       localStorage.removeItem('rememberedApiToken');
     }
 
-    const success = await attemptDockerLogin(username, apiToken);
-    loadingOverlay.style.display = 'none';
+    try {
+      const success = await window.electronAPI.dockerLogin(username, apiToken);
+      loadingOverlay.style.display = 'none';
 
-    if (success) {
-      localStorage.setItem('apiToken', apiToken);
-      ipcRenderer.send('login-success');
-    } else {
-      errorMessage.textContent = 'Usuario o API-TOKEN incorrectos';
-      ipcRenderer.send('login-failed');
+      if (success) {
+        localStorage.setItem('apiToken', apiToken);
+        window.electronAPI.loginSuccess();
+      } else {
+        errorMessage.textContent = 'Usuario o API-TOKEN incorrectos';
+      }
+    } catch (error) {
+      loadingOverlay.style.display = 'none';
+      errorMessage.textContent = 'Error al conectar con Docker';
+      console.error('Error en login:', error);
     }
   });
 });

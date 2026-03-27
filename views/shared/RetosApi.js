@@ -1,6 +1,4 @@
-// modules/RetosApi.js
-const api = require('../../../controllers/apiEndpoints');
-
+// shared/RetosApi.js
 class RetosApi {
   static async fetchChallenges(token, level, topic, type) {
     const challenges = await api.getChallenges({ token, level, topic, type });
@@ -8,4 +6,4 @@ class RetosApi {
   }
 }
 
-module.exports = RetosApi;
+window.RetosApi = RetosApi;

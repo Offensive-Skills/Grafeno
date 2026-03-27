@@ -1,13 +1,9 @@
 // views/cursos/cursos.js
-const api = require('../../controllers/apiEndpoints');
 
 const RetosApi = {
-    // Función para obtener cursos usando fetch; se asume que la BASE_URL está definida en ApiEndpoints.js (o se usa directamente la URL)
     async getCourses({ token }) {
-
       const cursos = await api.getCourses({ token });
       return cursos;
-
     }
   };
   

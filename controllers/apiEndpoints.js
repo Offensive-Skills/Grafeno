@@ -130,7 +130,7 @@ async function getRequestBlob(path, params) {
   const url = BASE_URL + path;
   const response = await fetch(url, {
     method: 'GET',
-    credentials: 'include' // O ajusta según la configuración de CORS/autenticación
+    credentials: 'include'
   });
   return response.blob();
 }
@@ -149,7 +149,6 @@ async function getRanking() {
  * @returns {Promise<Blob>}
  */
 async function getUserPoints(token) {
-  // Se envía el token como parámetro GET
   const url = BASE_URL + '/get_user_points?token=' + encodeURIComponent(token);
   const response = await fetch(url, {
     method: 'GET',
@@ -166,13 +165,7 @@ async function getFiles({ token, challengeID }) {
   return postRequestBlob('/get_files', { token, challengeID });
 }
 
-
-module.exports = {
-  getRanking,
-  getRequestBlob,
-};
-
-module.exports = {
+window.api = {
   getChallenges,
   getWriteup,
   getSeasonalChallenge,
@@ -186,6 +179,5 @@ module.exports = {
   getFiles,
   getRanking,
   getUserPoints,
-  // También se exporta BASE_URL si se requiere en otros módulos
   BASE_URL
 };
