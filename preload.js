@@ -26,4 +26,17 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
   // Clipboard
   writeClipboard: (text) => ipcRenderer.invoke('clipboard:write', text),
+
+  // Docker install
+  installDocker: (password) => ipcRenderer.invoke('docker:install', password),
+  onDockerInstallOutput: (callback) => {
+    const handler = (_event, data) => callback(data);
+    ipcRenderer.on('docker:install-output', handler);
+    return handler;
+  },
+  removeDockerInstallOutputListener: (handler) =>
+    ipcRenderer.removeListener('docker:install-output', handler),
+
+  // App
+  restartApp: () => ipcRenderer.send('restart-app'),
 });

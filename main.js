@@ -1,5 +1,5 @@
 // main.js
-const { app, BrowserWindow, ipcMain, dialog, clipboard } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog, clipboard, shell } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const { spawn, exec, execFile } = require('child_process');
@@ -50,11 +50,23 @@ function createWindow() {
       mainWindow.loadFile(path.join(__dirname, 'views', 'error', 'error.html'));
     });
 
-  if (!app.isPackaged) {
+  if (process.env.GRAFENO_DEVTOOLS === '1') {
     mainWindow.webContents.openDevTools();
   }
   mainWindow.setMenu(null);
   mainWindow.setMenuBarVisibility(false);
+
+  // Abrir enlaces externos en el navegador del sistema
+  mainWindow.webContents.setWindowOpenHandler(({ url }) => {
+    shell.openExternal(url);
+    return { action: 'deny' };
+  });
+  mainWindow.webContents.on('will-navigate', (event, url) => {
+    if (!url.startsWith('file://')) {
+      event.preventDefault();
+      shell.openExternal(url);
+    }
+  });
 
   mainWindow.on('closed', () => {
     mainWindow = null;
@@ -213,6 +225,49 @@ ipcMain.handle('app:get-downloads-dir', async () => {
 ipcMain.handle('clipboard:write', async (_event, text) => {
   clipboard.writeText(text);
   return true;
+});
+
+// Docker: instalar Docker en el sistema
+ipcMain.handle('docker:install', async (_event, password) => {
+  const installCmd = "curl -fsSL 'https://raw.githubusercontent.com/Offensive-Skills/Grafeno/main/setup_docker.sh' | bash -s";
+
+  return new Promise((resolve, reject) => {
+    const child = spawn('sudo', ['-S', 'bash', '-c', installCmd]);
+
+    child.stdin.write(password + '\n');
+    child.stdin.end();
+
+    let output = '';
+    const stripAnsi = (text) => text.replace(/\x1B\[[0-9;]*[a-zA-Z]/g, '').replace(/\r/g, '');
+
+    child.stdout.on('data', (data) => {
+      const text = stripAnsi(data.toString());
+      output += text;
+      if (mainWindow) mainWindow.webContents.send('docker:install-output', text);
+    });
+
+    child.stderr.on('data', (data) => {
+      const text = stripAnsi(data.toString());
+      if (!text.includes('[sudo]') && !text.includes('password for')) {
+        output += text;
+        if (mainWindow) mainWindow.webContents.send('docker:install-output', text);
+      }
+    });
+
+    child.on('close', (code) => {
+      resolve({ success: code === 0, output });
+    });
+
+    child.on('error', (err) => {
+      reject(err);
+    });
+  });
+});
+
+// Reiniciar la aplicación
+ipcMain.on('restart-app', () => {
+  app.relaunch();
+  app.exit(0);
 });
 
 // ── Configuración de autoUpdater ────────────────────────────────────
