@@ -45,11 +45,13 @@ npm version major   # cambio mayor
 
 > `npm version` actualiza `package.json`, hace commit y crea el tag automáticamente. Si lo haces así, **salta al paso 4**.
 
+
 ### 3. Commit con la nueva versión
 
 Si has editado `package.json` manualmente:
 
 ```bash
+npm install --package-lock-only
 git add package.json package-lock.json
 git commit -m "chore: bump version to 1.0.X"
 ```
