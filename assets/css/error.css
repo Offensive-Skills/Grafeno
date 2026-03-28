@@ -38,7 +38,9 @@ body {
     border-radius: 10px;
     padding: 30px;
     text-align: center;
-    max-width: 500px;
+    max-width: 620px;
+    max-height: 85vh;
+    overflow-y: auto;
   }
   
   /* Estilos para el título y párrafos */
@@ -48,15 +50,119 @@ body {
   }
   
   .error-container p {
-    margin-bottom: 30px;
+    margin-bottom: 15px;
     font-size: 16px;
     color: #beefbe;
   }
+
+  /* Caja informativa */
+  .info-box {
+    background: rgba(190, 239, 190, 0.08);
+    border: 1px solid rgba(190, 239, 190, 0.3);
+    border-radius: 8px;
+    padding: 15px 20px;
+    margin-bottom: 20px;
+    text-align: left;
+  }
+
+  .info-box p {
+    margin-bottom: 8px;
+    font-size: 14px;
+  }
+
+  .info-box .info-small {
+    font-size: 13px;
+    opacity: 0.85;
+    margin-bottom: 5px;
+  }
+
+  .info-box a {
+    color: #beefbe;
+    text-decoration: underline;
+    cursor: pointer;
+  }
+
+  .info-box a:hover {
+    color: #fff;
+  }
+
+  /* Grupo de input */
+  .input-group {
+    margin-bottom: 15px;
+    text-align: left;
+  }
+
+  .input-group label {
+    display: block;
+    margin-bottom: 6px;
+    color: #beefbe;
+    font-size: 14px;
+  }
+
+  .input-group input[type="password"] {
+    width: 100%;
+    padding: 10px 12px;
+    font-size: 15px;
+    font-family: 'Courier Prime', Courier, monospace;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(190, 239, 190, 0.4);
+    border-radius: 5px;
+    color: #beefbe;
+    outline: none;
+    box-sizing: border-box;
+  }
+
+  .input-group input[type="password"]:focus {
+    border-color: #beefbe;
+  }
+
+  .input-group input[type="password"]::placeholder {
+    color: rgba(190, 239, 190, 0.4);
+  }
+
+  /* Log de instalación */
+  #logSection {
+    margin: 15px 0;
+  }
+
+  #installLog {
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(190, 239, 190, 0.2);
+    border-radius: 5px;
+    padding: 12px;
+    max-height: 200px;
+    overflow-y: auto;
+    text-align: left;
+    font-size: 12px;
+    color: #beefbe;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+  }
+
+  /* Mensajes de estado */
+  .success-msg {
+    color: #beefbe !important;
+    font-weight: bold;
+  }
+
+  .error-msg {
+    color: #ff6b6b !important;
+    font-weight: bold;
+  }
+
+  /* Fila de botones */
+  .button-row {
+    margin-top: 15px;
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+  }
   
-  /* Estilos para el botón */
+  /* Estilos para botones */
   .error-container button {
     padding: 10px 20px;
     font-size: 16px;
+    font-family: 'Courier Prime', Courier, monospace;
     border: none;
     border-radius: 5px;
     background-color: #beefbe;
@@ -68,5 +174,26 @@ body {
   .error-container button:hover {
     background-color: #2f3136;
     color: #beefbe;
+    border: 1px solid #beefbe;
+  }
+
+  .error-container button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  #installButton {
+    margin-bottom: 10px;
+  }
+
+  #restartButton {
+    background-color: #5cb85c;
+    color: #fff;
+  }
+
+  #restartButton:hover {
+    background-color: #2f3136;
+    color: #5cb85c;
+    border: 1px solid #5cb85c;
   }
   

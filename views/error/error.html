@@ -2,31 +2,50 @@
 <html lang="es">
   <head>
     <meta charset="UTF-8">
-    <title>Grafeno - Error</title>
+    <title>Grafeno - Docker no encontrado</title>
     <link rel="stylesheet" href="../../assets/css/error.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Courier+Prime&display=swap" rel="stylesheet">
   </head>
   <body>
-    <!-- Canvas de fondo animado -->
     <canvas id="bgCanvas"></canvas>
 
-    <!-- Contenedor overlay para el error -->
     <div class="error-overlay">
       <div class="error-container">
-        <h1>Error de configuración</h1>
-        <p>Docker no está instalado o el usuario no tiene los permisos necesarios para ejecutarlo.</p>
-        <button id="closeButton">Cerrar</button>
+        <h1>Docker no está instalado</h1>
+        <p>Grafeno necesita Docker para funcionar. Puedes instalarlo directamente desde aquí.</p>
+
+        <div class="info-box">
+          <p>⚠️ La instalación automática solo está disponible para <strong>Ubuntu</strong>, <strong>Debian</strong> y <strong>Kali Linux</strong>.</p>
+          <p>Para otros sistemas operativos, consulta la
+            <a href="https://docs.docker.com/engine/install/">documentación oficial de Docker</a>.</p>
+          <p class="info-small">📖 El script de instalación es público y sigue las instrucciones oficiales:
+            <a href="https://github.com/Offensive-Skills/Grafeno/blob/main/setup_docker.sh">ver en GitHub</a></p>
+          <p class="info-small">🔒 La contraseña solo se utiliza para instalar los paquetes oficiales de Docker.</p>
+        </div>
+
+        <div id="installSection">
+          <div class="input-group">
+            <label for="sudoPassword">Contraseña de administrador (sudo):</label>
+            <input type="password" id="sudoPassword" placeholder="Contraseña sudo">
+          </div>
+          <button id="installButton">Instalar Docker</button>
+        </div>
+
+        <div id="logSection" style="display: none;">
+          <pre id="installLog"></pre>
+        </div>
+
+        <p id="statusMsg" style="display: none;"></p>
+
+        <div class="button-row">
+          <button id="restartButton" style="display: none;">Reiniciar Grafeno</button>
+          <button id="closeButton">Cerrar</button>
+        </div>
       </div>
     </div>
 
-    <!-- Script para el fondo animado -->
     <script src="../background/background.js"></script>
-    <script>
-      const { ipcRenderer } = require('electron');
-      document.getElementById('closeButton').addEventListener('click', () => {
-        ipcRenderer.send('close-app');
-      });
-    </script>
+    <script src="error.js"></script>
   </body>
 </html>
