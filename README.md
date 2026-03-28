@@ -65,6 +65,28 @@ grafeno
 
 ---
 
+## Desarrollo
+
+### Ejecutar Grafeno en modo desarrollo
+
+Para ejecutar Grafeno desde el código fuente en modo desarrollo:
+
+```bash
+npm start
+```
+
+### Abrir herramientas de desarrollador
+
+Para abrir las DevTools de Chromium (Inspector de elementos, consola, etc.), ejecuta:
+
+```bash
+GRAFENO_DEVTOOLS=1 npm start
+```
+
+La variable de entorno `GRAFENO_DEVTOOLS=1` abre automáticamente las herramientas de desarrollador al iniciar la aplicación.
+
+---
+
 ## Notas adicionales
 
 - Verifica que Docker esté funcionando correctamente antes de ejecutar Grafeno.
