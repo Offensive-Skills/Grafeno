@@ -22,7 +22,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'npm'
 
       - name: Install system deps
@@ -32,6 +32,10 @@ jobs:
 
       - name: Install npm deps
         run: npm ci
+        env:
+          ELECTRON_MIRROR: https://github.com/electron/electron/releases/download/
+          npm_config_fetch_retries: 5
+          npm_config_fetch_retry_mintimeout: 10000
 
       - name: Build & publish linux ${{ matrix.arch }}
         run: npx electron-builder --linux deb AppImage rpm --${{ matrix.arch }} -p ${{ startsWith(github.ref, 'refs/tags/') && 'always' || 'never' }}
@@ -55,7 +59,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'npm'
 
       - name: Install npm deps
