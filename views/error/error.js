@@ -15,7 +15,7 @@ window.addEventListener('DOMContentLoaded', () => {
   });
 
   restartButton.addEventListener('click', () => {
-    window.electronAPI.restartApp();
+    window.electronAPI.rebootSystem();
   });
 
   passwordInput.addEventListener('keydown', (e) => {
@@ -46,7 +46,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
       if (result.success) {
         installSection.style.display = 'none';
-        statusMsg.textContent = '✅ Docker instalado correctamente.';
+        statusMsg.innerHTML = '✅ Docker instalado correctamente.<br><br>⚠️ <strong>Es necesario reiniciar el equipo</strong> para completar la instalación y poder usar Grafeno.';
         statusMsg.className = 'success-msg';
         statusMsg.style.display = 'block';
         restartButton.style.display = 'inline-block';
