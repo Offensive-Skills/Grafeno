@@ -229,7 +229,7 @@ ipcMain.handle('clipboard:write', async (_event, text) => {
 
 // Docker: instalar Docker en el sistema
 ipcMain.handle('docker:install', async (_event, password) => {
-  const installCmd = "curl -fsSL 'https://raw.githubusercontent.com/Offensive-Skills/Grafeno/main/setup_docker.sh' | bash -s";
+  const installCmd = "command -v curl >/dev/null 2>&1 || { echo 'Error: curl no está instalado. Instálalo con: sudo apt install curl'; exit 1; }; set -o pipefail; curl -fsSL 'https://raw.githubusercontent.com/Offensive-Skills/Grafeno/main/setup_docker.sh' | bash -s";
 
   return new Promise((resolve, reject) => {
     const child = spawn('sudo', ['-S', 'bash', '-c', installCmd]);
@@ -261,6 +261,14 @@ ipcMain.handle('docker:install', async (_event, password) => {
     child.on('error', (err) => {
       reject(err);
     });
+  });
+});
+
+// Reiniciar el equipo
+ipcMain.on('reboot-system', () => {
+  const { exec } = require('child_process');
+  exec('systemctl reboot', (err) => {
+    if (err) exec('reboot');
   });
 });
 

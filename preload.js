@@ -39,4 +39,5 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
   // App
   restartApp: () => ipcRenderer.send('restart-app'),
+  rebootSystem: () => ipcRenderer.send('reboot-system'),
 });
