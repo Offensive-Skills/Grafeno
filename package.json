@@ -1,6 +1,6 @@
 {
   "name": "grafeno",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "Aplicación para despliegue de entornos simulados de pentesting",
   "main": "main.js",
   "scripts": {
