@@ -7,3 +7,6 @@ dist/
 # Nix Direnv generated directory
 .direnv
 direnv.local
+
+# Images
+images/
