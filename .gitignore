@@ -10,3 +10,6 @@ direnv.local
 
 # Images
 images/
+
+# AGENTS
+AGENTS.md
