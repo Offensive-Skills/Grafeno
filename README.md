@@ -12,7 +12,9 @@ Grafeno es una herramienta de automatización para el despliegue de entornos des
 
 ## Instalación
 
-Puedes descargar directamente el paquete `.deb` incluido en la [página de releases](https://github.com/Offensive-Skills/Grafeno/releases) para instalar Grafeno de forma rápida y sencilla en sistemas basados en Debian/Ubuntu.
+Descarga el paquete `.deb` desde la [página de releases de GitHub](https://github.com/Offensive-Skills/Grafeno/releases) o desde [offs.es/tools](https://offs.es/tools) — ambas ofrecen el mismo binario — para instalar Grafeno de forma rápida y sencilla en sistemas basados en Debian/Ubuntu.
+
+> Para una guía de instalación ilustrada paso a paso (con capturas, primer login y despliegue de tu primer reto), consulta [`install_grafeno.md`](./install_grafeno.md).
 
 ### Requisitos previos
 
@@ -33,7 +35,7 @@ Puedes descargar directamente el paquete `.deb` incluido en la [página de relea
 
 ### Instalación del paquete
 
-1. Dirígete a la [página de releases](https://github.com/Offensive-Skills/Grafeno/releases) y descarga el archivo `.deb` correspondiente a la versión que deseas instalar.
+1. Dirígete a la [página de releases de GitHub](https://github.com/Offensive-Skills/Grafeno/releases) o a [offs.es/tools](https://offs.es/tools) y descarga el archivo `.deb` correspondiente a la versión que deseas instalar.
 2. Instala el paquete descargado ejecutando en una terminal:
    ```bash
    sudo dpkg -i grafeno-x.y.z.deb
@@ -56,12 +58,12 @@ grafeno
 
 > ***Nota Importante:***
 > Necesitas tener **credenciales** válidas para poder acceder a Grafeno. Para obtenerlas:
-> 1. Regístrate o inicia sesión en la [página de Offensive Skills](https://offs.es/escritorio).
-> 2. Accede a la [gestión de API Tokens](https://offs.es/escritorio/api-token) para obtener tu token.
+> 1. Regístrate en [offs.es/register](https://offs.es/register) e inicia sesión.
+> 2. Accede a la [gestión de API Tokens](https://offs.es/dashboard/api-token) para obtener tu token.
 >
 > **Campos solicitados al iniciar sesión:**
-> - `usuario`: Tu nombre de usuario en [Offensive Skills](https://offs.es/escritorio)
-> - `api-token`: El token asociado a tu cuenta, visible en la [página de API Tokens](https://offs.es/escritorio/api-token).
+> - `usuario`: Tu nombre de usuario en [Offensive Skills](https://offs.es)
+> - `api-token`: El token asociado a tu cuenta, visible en la [página de API Tokens](https://offs.es/dashboard/api-token).
 
 ---
 
