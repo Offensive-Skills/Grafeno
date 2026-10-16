@@ -1,4 +1,4 @@
-
+[English](./README_EN.md) | Español
 
 # Grafeno
 
@@ -23,7 +23,7 @@ Descarga el paquete `.deb` desde la [página de releases de GitHub](https://gith
   > ***Nota:***
   > Si no tienes Docker instalado, ejecuta:
   > ```bash
-  > sudo ./setup_docker.sh
+  > curl -fsSL 'https://raw.githubusercontent.com/Offensive-Skills/Grafeno/main/setup_docker.sh' | sudo bash -s
   > ```
   >
   > O sigue las instrucciones en [la documentación de Docker](https://docs.docker.com/get-docker/).
@@ -101,4 +101,3 @@ La variable de entorno `GRAFENO_DEVTOOLS=1` abre automáticamente las herramient
 Grafeno © 2024 by Offensive Skills is licensed under Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International.
 
 Consulta más detalles sobre la licencia en el archivo [`LICENSE`](./LICENSE.md).
-
