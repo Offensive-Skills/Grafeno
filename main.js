@@ -220,7 +220,7 @@ function createWindow() {
     mainWindow = null;
   });
 
-  autoUpdater.checkForUpdatesAndNotify();
+  autoUpdater.checkForUpdates();
 }
 
 // ── IPC Handlers ────────────────────────────────────────────────────
@@ -535,12 +535,18 @@ autoUpdater.on('update-available', (info) => {
 
 autoUpdater.on('update-downloaded', (info) => {
   console.log('Actualización descargada:', info);
-  dialog.showMessageBox({
+  const dialogOptions = {
     type: 'info',
     title: 'Actualización disponible',
     message: 'La actualización se ha descargado. ¿Deseas reiniciar la aplicación para instalarla?',
     buttons: ['Reiniciar', 'Más tarde']
-  }).then(result => {
+  };
+
+  const showDialog = mainWindow && !mainWindow.isDestroyed()
+    ? dialog.showMessageBox(mainWindow, dialogOptions)
+    : dialog.showMessageBox(dialogOptions);
+
+  showDialog.then((result) => {
     if (result.response === 0) {
       autoUpdater.quitAndInstall();
     }
