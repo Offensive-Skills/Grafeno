@@ -23,7 +23,7 @@ Download the `.deb` package from the [GitHub releases page](https://github.com/O
   > ***Note:***
   > If you don't have Docker installed, run:
   > ```bash
-  > sudo ./setup_docker.sh
+  > curl -fsSL 'https://raw.githubusercontent.com/Offensive-Skills/Grafeno/main/setup_docker.sh' | sudo bash -s
   > ```
   >
   > Alternatively, follow the instructions in the [official Docker documentation](https://docs.docker.com/get-docker/).
