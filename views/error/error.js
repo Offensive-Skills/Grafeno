@@ -21,6 +21,19 @@ window.addEventListener('DOMContentLoaded', () => {
     statusMsg.style.display = 'block';
   }
 
+  function showLoading(message) {
+    statusMsg.textContent = ' ' + message;
+    statusMsg.insertAdjacentHTML('afterbegin', '<span class="status-spinner" aria-hidden="true"></span>');
+    statusMsg.className = 'status-loading';
+    statusMsg.style.display = 'block';
+  }
+
+  function hideStatus() {
+    statusMsg.textContent = '';
+    statusMsg.className = '';
+    statusMsg.style.display = 'none';
+  }
+
   window.electronAPI.getDockerStartupError().then((error) => {
     if (error?.code === 'COMPOSE_MISSING') {
       document.getElementById('errorTitle').textContent = 'Docker Compose v2 no está instalado';
@@ -54,6 +67,8 @@ window.addEventListener('DOMContentLoaded', () => {
     passwordInput.disabled = true;
     logSection.style.display = 'block';
     installLog.textContent = '';
+    hideStatus();
+    showLoading('Instalando Docker, esto puede tardar unos minutos...');
 
     const outputHandler = window.electronAPI.onDockerInstallOutput((text) => {
       installLog.textContent += text;
@@ -65,11 +80,13 @@ window.addEventListener('DOMContentLoaded', () => {
       window.electronAPI.removeDockerInstallOutputListener(outputHandler);
 
       if (result.success) {
+        hideStatus();
         installSection.style.display = 'none';
         logSection.style.display = 'none';
         buttonRow.style.display = 'none';
         actionRequired.style.display = 'block';
       } else {
+        hideStatus();
         showError('La instalación ha fallado. Revisa la contraseña e inténtalo de nuevo.');
         installButton.disabled = false;
         installButton.textContent = 'Reintentar';
@@ -79,6 +96,7 @@ window.addEventListener('DOMContentLoaded', () => {
       }
     } catch (err) {
       window.electronAPI.removeDockerInstallOutputListener(outputHandler);
+      hideStatus();
       showError('Error inesperado: ' + err.message);
       installButton.disabled = false;
       installButton.textContent = 'Reintentar';
