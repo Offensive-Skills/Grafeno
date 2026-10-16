@@ -7,8 +7,19 @@ window.addEventListener('DOMContentLoaded', () => {
   const logSection = document.getElementById('logSection');
   const installLog = document.getElementById('installLog');
   const statusMsg = document.getElementById('statusMsg');
-  const restartButton = document.getElementById('restartButton');
+  const actionRequired = document.getElementById('actionRequired');
+  const closeGrafenoButton = document.getElementById('closeGrafenoButton');
+  const buttonRow = document.getElementById('buttonRow');
   const closeButton = document.getElementById('closeButton');
+
+  const crossIcon = '<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
+
+  function showError(message) {
+    statusMsg.textContent = ' ' + message;
+    statusMsg.insertAdjacentHTML('afterbegin', crossIcon);
+    statusMsg.className = 'error-msg';
+    statusMsg.style.display = 'block';
+  }
 
   window.electronAPI.getDockerStartupError().then((error) => {
     if (error?.code === 'COMPOSE_MISSING') {
@@ -23,8 +34,8 @@ window.addEventListener('DOMContentLoaded', () => {
     window.electronAPI.closeApp();
   });
 
-  restartButton.addEventListener('click', () => {
-    window.electronAPI.rebootSystem();
+  closeGrafenoButton.addEventListener('click', () => {
+    window.electronAPI.closeApp();
   });
 
   passwordInput.addEventListener('keydown', (e) => {
@@ -55,14 +66,11 @@ window.addEventListener('DOMContentLoaded', () => {
 
       if (result.success) {
         installSection.style.display = 'none';
-        statusMsg.innerHTML = '✅ Docker instalado correctamente.<br><br>⚠️ <strong>Es necesario reiniciar el equipo</strong> para completar la instalación y poder usar Grafeno.';
-        statusMsg.className = 'success-msg';
-        statusMsg.style.display = 'block';
-        restartButton.style.display = 'inline-block';
+        logSection.style.display = 'none';
+        buttonRow.style.display = 'none';
+        actionRequired.style.display = 'block';
       } else {
-        statusMsg.textContent = '❌ La instalación ha fallado. Revisa la contraseña e inténtalo de nuevo.';
-        statusMsg.className = 'error-msg';
-        statusMsg.style.display = 'block';
+        showError('La instalación ha fallado. Revisa la contraseña e inténtalo de nuevo.');
         installButton.disabled = false;
         installButton.textContent = 'Reintentar';
         passwordInput.disabled = false;
@@ -71,9 +79,7 @@ window.addEventListener('DOMContentLoaded', () => {
       }
     } catch (err) {
       window.electronAPI.removeDockerInstallOutputListener(outputHandler);
-      statusMsg.textContent = '❌ Error inesperado: ' + err.message;
-      statusMsg.className = 'error-msg';
-      statusMsg.style.display = 'block';
+      showError('Error inesperado: ' + err.message);
       installButton.disabled = false;
       installButton.textContent = 'Reintentar';
       passwordInput.disabled = false;

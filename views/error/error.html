@@ -16,12 +16,15 @@
         <p id="errorDescription">Grafeno necesita Docker para funcionar. Puedes instalarlo directamente desde aquí.</p>
 
         <div class="info-box">
-          <p>⚠️ La instalación automática solo está disponible para <strong>Ubuntu</strong>, <strong>Debian</strong> y <strong>Kali Linux</strong>.</p>
+          <p><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            La instalación automática solo está disponible para <strong>Ubuntu</strong>, <strong>Debian</strong> y <strong>Kali Linux</strong>.</p>
           <p>Para otros sistemas operativos, consulta la
             <a href="https://docs.docker.com/engine/install/">documentación oficial de Docker</a>.</p>
-          <p class="info-small">📖 El script de instalación es público y sigue las instrucciones oficiales:
+          <p class="info-small"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/></svg>
+            El script de instalación es público y sigue las instrucciones oficiales:
             <a href="https://github.com/Offensive-Skills/Grafeno/blob/main/setup_docker.sh">ver en GitHub</a></p>
-          <p class="info-small">🔒 La contraseña solo se utiliza para instalar los paquetes oficiales de Docker.</p>
+          <p class="info-small"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            La contraseña solo se utiliza para instalar los paquetes oficiales de Docker.</p>
         </div>
 
         <div id="installSection">
@@ -38,8 +41,25 @@
 
         <p id="statusMsg" style="display: none;"></p>
 
-        <div class="button-row">
-          <button id="restartButton" style="display: none;">🔄 Reiniciar equipo</button>
+        <div id="actionRequired" class="action-required" style="display: none;">
+          <div class="action-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
+              <polyline points="10 17 15 12 10 7"/>
+              <line x1="15" y1="12" x2="3" y2="12"/>
+            </svg>
+          </div>
+          <h2 class="action-title">Cierra sesión y vuelve a iniciarla</h2>
+          <p class="action-text">Docker se ha instalado correctamente. Para que Grafeno pueda usarlo, el cambio de grupo <strong>docker</strong> necesita una nueva sesión de trabajo.</p>
+          <ol class="action-steps">
+            <li><span class="step-num">1</span><span>Cierra la sesión actual</span></li>
+            <li><span class="step-num">2</span><span>Vuelve a iniciar sesión</span></li>
+            <li><span class="step-num">3</span><span>Abre Grafeno</span></li>
+          </ol>
+          <button id="closeGrafenoButton">Cerrar Grafeno</button>
+        </div>
+
+        <div class="button-row" id="buttonRow">
           <button id="closeButton">Cerrar</button>
         </div>
       </div>

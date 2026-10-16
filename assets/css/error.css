@@ -86,6 +86,104 @@ body {
     color: #fff;
   }
 
+  /* Iconos SVG inline */
+  .icon-inline {
+    width: 16px;
+    height: 16px;
+    vertical-align: text-bottom;
+    margin-right: 6px;
+    color: #beefbe;
+  }
+
+  /* Bloque de acción requerida tras la instalación */
+  .action-required {
+    margin-top: 20px;
+    padding: 28px 24px;
+    border: 1px solid rgba(190, 239, 190, 0.4);
+    border-radius: 8px;
+    background: rgba(190, 239, 190, 0.06);
+    animation: action-in 0.3s ease-out;
+  }
+
+  @keyframes action-in {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .action-icon {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 88px;
+    height: 88px;
+    margin: 0 auto 18px;
+    border: 1px solid rgba(190, 239, 190, 0.35);
+    border-radius: 50%;
+  }
+
+  .action-icon svg {
+    width: 44px;
+    height: 44px;
+    color: #beefbe;
+  }
+
+  .action-title {
+    margin: 0 0 10px;
+    font-size: 20px;
+    color: #beefbe;
+  }
+
+  .action-text {
+    font-size: 15px;
+    margin-bottom: 20px;
+  }
+
+  .action-steps {
+    list-style: none;
+    margin: 0 auto;
+    padding: 0;
+    display: inline-block;
+    text-align: left;
+  }
+
+  .action-steps li {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 10px;
+    font-size: 15px;
+    color: #beefbe;
+  }
+
+  .action-steps li:last-child {
+    margin-bottom: 0;
+  }
+
+  .step-num {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 26px;
+    height: 26px;
+    flex-shrink: 0;
+    border: 1px solid #beefbe;
+    border-radius: 50%;
+    font-size: 13px;
+    font-weight: bold;
+  }
+
+  #closeGrafenoButton {
+    display: block;
+    margin: 22px auto 0;
+    padding: 12px 32px;
+  }
+
   /* Grupo de input */
   .input-group {
     margin-bottom: 15px;
@@ -184,16 +282,5 @@ body {
 
   #installButton {
     margin-bottom: 10px;
-  }
-
-  #restartButton {
-    background-color: #5cb85c;
-    color: #fff;
-  }
-
-  #restartButton:hover {
-    background-color: #2f3136;
-    color: #5cb85c;
-    border: 1px solid #5cb85c;
   }
   

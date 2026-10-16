@@ -521,14 +521,6 @@ ipcMain.handle('docker:install', async (_event, password) => {
   });
 });
 
-// Reiniciar el equipo
-ipcMain.on('reboot-system', () => {
-  const { exec } = require('child_process');
-  exec('systemctl reboot', (err) => {
-    if (err) exec('reboot');
-  });
-});
-
 // Reiniciar la aplicación
 ipcMain.on('restart-app', () => {
   app.relaunch();
