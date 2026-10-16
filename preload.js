@@ -3,12 +3,19 @@ const { contextBridge, ipcRenderer } = require('electron');
 
 contextBridge.exposeInMainWorld('electronAPI', {
   // Navegación
+  getApiBaseUrl: () => process.env.GRAFENO_API_URL || 'https://grafeno.offs.es',
   loginSuccess: () => ipcRenderer.send('login-success'),
   closeApp: () => ipcRenderer.send('close-app'),
 
   // Docker
   dockerLogin: (username, apiToken) => ipcRenderer.invoke('docker:login', username, apiToken),
   runContainer: (title, version, mode) => ipcRenderer.invoke('docker:run-container', title, version, mode),
+  cacheCompose: (challengeID, composeYaml, composeSha256) =>
+    ipcRenderer.invoke('compose:cache', challengeID, composeYaml, composeSha256),
+  runCompose: (challengeID, mode) => ipcRenderer.invoke('compose:run', challengeID, mode),
+  checkCompose: (challengeID) => ipcRenderer.invoke('compose:check', challengeID),
+  supportsCompose: () => process.platform === 'linux',
+  getDockerStartupError: () => ipcRenderer.invoke('docker:get-startup-error'),
   onDockerProgress: (callback) => {
     const handler = (_event, data) => callback(data);
     ipcRenderer.on('docker:progress', handler);

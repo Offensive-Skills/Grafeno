@@ -85,9 +85,15 @@ class RetosDetail {
       });
     }
     
-    // Sección Docker (si challenge.is_docker)
+    // Sección Docker/Compose
     let dockerSection = null;
-    if (challenge.is_docker) {
+    const isDocker = challenge.is_docker === true || challenge.is_docker === 1;
+    const isDockerCompose = challenge.is_docker_compose === true || challenge.is_docker_compose === 1;
+    if (isDockerCompose && !isDocker) {
+      console.warn(`El reto ${challenge.id} tiene is_docker_compose sin is_docker.`);
+    } else if (isDocker && isDockerCompose && window.electronAPI.supportsCompose()) {
+      dockerSection = dockerManager.createComposeSection(challenge, token);
+    } else if (isDocker && !isDockerCompose) {
       dockerSection = dockerManager.createDockerSection(challenge);
     }
     

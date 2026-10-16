@@ -4,7 +4,9 @@
   "description": "Aplicación para despliegue de entornos simulados de pentesting",
   "main": "main.js",
   "scripts": {
+    "test": "node --test tests/*.test.js",
     "start": "electron .",
+    "start:dev": "GRAFENO_API_URL=http://localhost:10000 electron .",
     "dist": "electron-builder",
     "dist:linux:x64": "electron-builder --linux deb AppImage rpm --x64",
     "dist:linux:arm64": "electron-builder --linux deb AppImage rpm --arm64",

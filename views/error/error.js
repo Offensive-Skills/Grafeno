@@ -10,6 +10,15 @@ window.addEventListener('DOMContentLoaded', () => {
   const restartButton = document.getElementById('restartButton');
   const closeButton = document.getElementById('closeButton');
 
+  window.electronAPI.getDockerStartupError().then((error) => {
+    if (error?.code === 'COMPOSE_MISSING') {
+      document.getElementById('errorTitle').textContent = 'Docker Compose v2 no está instalado';
+      document.getElementById('errorDescription').textContent = error.message;
+      document.getElementById('installSection').style.display = 'none';
+      document.querySelector('.info-box').innerHTML = '<p>Instala el plugin oficial <code>docker-compose-plugin</code> para tu distribución y vuelve a iniciar Grafeno.</p><p><a href="https://docs.docker.com/compose/install/linux/">Documentación oficial de Docker Compose</a></p>';
+    }
+  });
+
   closeButton.addEventListener('click', () => {
     window.electronAPI.closeApp();
   });

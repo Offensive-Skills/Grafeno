@@ -1,6 +1,6 @@
 // controllers/apiEndpoints.js
 
-const BASE_URL = 'https://grafeno.offs.es';
+const BASE_URL = window.electronAPI?.getApiBaseUrl?.() || 'https://grafeno.offs.es';
 
 /**
  * Función genérica para enviar peticiones POST con cuerpo JSON.
@@ -54,6 +54,10 @@ async function getChallenges({ token, level, topic, type }) {
  */
 async function getWriteup({ token, challengeID }) {
   return postRequest('/get_writeup_md', { token, challengeID });
+}
+
+async function getCompose({ token, challengeID }) {
+  return postRequest('/get_compose', { token, challengeID });
 }
 
 /**
@@ -168,6 +172,7 @@ async function getFiles({ token, challengeID }) {
 window.api = {
   getChallenges,
   getWriteup,
+  getCompose,
   getSeasonalChallenge,
   getWarningNotification,
   checkToken,

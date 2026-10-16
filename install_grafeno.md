@@ -1,3 +1,5 @@
+[Español](./install_grafeno.md) | [English](./install_grafeno_EN.md)
+
 # Instalación de Grafeno
 
 [Instalar Grafeno: disponible en la página de Offensive Skills](https://offs.es/tools)

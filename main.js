@@ -2,10 +2,142 @@
 const { app, BrowserWindow, ipcMain, dialog, clipboard, shell } = require('electron');
 const path = require('path');
 const fs = require('fs');
+const os = require('os');
+const crypto = require('crypto');
 const { spawn, exec, execFile } = require('child_process');
 const { autoUpdater } = require('electron-updater');
+const {
+  parseNetworkTemplates,
+  renderComposeTemplate,
+  selectDynamicSubnets,
+  findPostUpConflicts
+} = require('./controllers/composeNetworkAllocator');
 
 let mainWindow;
+let harborCredentials = null;
+const composeOperations = new Set();
+let startupDockerError = null;
+
+function getComposeCacheDir(challengeID) {
+  const id = String(challengeID);
+  if (!/^\d+$/.test(id)) throw new Error('Identificador de reto inválido.');
+  return path.join(os.homedir(), '.cache', 'grafeno', 'compose', id);
+}
+
+function cacheCompose(challengeID, composeYaml, composeSha256) {
+  if (process.platform !== 'linux') throw new Error('Docker Compose solo está disponible en Linux.');
+  if (typeof composeYaml !== 'string' || Buffer.byteLength(composeYaml, 'utf8') > 256 * 1024) {
+    throw new Error('El fichero Compose no es válido o supera 256 KiB.');
+  }
+  if (typeof composeSha256 !== 'string' || !/^[a-f0-9]{64}$/i.test(composeSha256)) {
+    throw new Error('Hash Compose inválido.');
+  }
+  const actualHash = crypto.createHash('sha256').update(composeYaml, 'utf8').digest('hex');
+  if (actualHash !== composeSha256.toLowerCase()) throw new Error('El hash del fichero Compose no coincide.');
+
+  const directory = getComposeCacheDir(challengeID);
+  fs.mkdirSync(directory, { recursive: true, mode: 0o700 });
+  fs.chmodSync(directory, 0o700);
+  const yamlPath = path.join(directory, 'docker-compose.yml');
+  const hashPath = path.join(directory, 'compose.sha256');
+  if (fs.existsSync(yamlPath) && fs.existsSync(hashPath)) {
+    const cachedHash = fs.readFileSync(hashPath, 'utf8').trim();
+    if (cachedHash === actualHash && crypto.createHash('sha256').update(fs.readFileSync(yamlPath)).digest('hex') === actualHash) {
+      fs.chmodSync(yamlPath, 0o600);
+      fs.chmodSync(hashPath, 0o600);
+      return yamlPath;
+    }
+  }
+
+  const suffix = `${process.pid}.${crypto.randomBytes(6).toString('hex')}.tmp`;
+  const yamlTemp = `${yamlPath}.${suffix}`;
+  const hashTemp = `${hashPath}.${suffix}`;
+  try {
+    fs.writeFileSync(yamlTemp, composeYaml, { mode: 0o600, flag: 'wx' });
+    fs.writeFileSync(hashTemp, `${actualHash}\n`, { mode: 0o600, flag: 'wx' });
+    fs.renameSync(yamlTemp, yamlPath);
+    fs.renameSync(hashTemp, hashPath);
+  } finally {
+    for (const temporaryPath of [yamlTemp, hashTemp]) {
+      if (fs.existsSync(temporaryPath)) fs.unlinkSync(temporaryPath);
+    }
+  }
+  return yamlPath;
+}
+
+function getVerifiedComposePath(challengeID) {
+  const directory = getComposeCacheDir(challengeID);
+  const yamlPath = path.join(directory, 'docker-compose.yml');
+  const hashPath = path.join(directory, 'compose.sha256');
+  if (!fs.existsSync(yamlPath) || !fs.existsSync(hashPath)) throw new Error('No hay un Compose válido en caché.');
+  const expectedHash = fs.readFileSync(hashPath, 'utf8').trim();
+  const actualHash = crypto.createHash('sha256').update(fs.readFileSync(yamlPath)).digest('hex');
+  if (!/^[a-f0-9]{64}$/.test(expectedHash) || expectedHash !== actualHash) {
+    throw new Error('La caché Compose está dañada; vuelve a cargar el reto.');
+  }
+  return yamlPath;
+}
+
+function writeFileAtomically(filePath, contents) {
+  const temporaryPath = `${filePath}.${process.pid}.${crypto.randomBytes(6).toString('hex')}.tmp`;
+  try {
+    fs.writeFileSync(temporaryPath, contents, { mode: 0o600, flag: 'wx' });
+    fs.renameSync(temporaryPath, filePath);
+  } finally {
+    if (fs.existsSync(temporaryPath)) fs.unlinkSync(temporaryPath);
+  }
+}
+
+async function prepareRuntimeCompose(challengeID, rejectedSubnets = {}) {
+  const templatePath = getVerifiedComposePath(challengeID);
+  const directory = path.dirname(templatePath);
+  const template = fs.readFileSync(templatePath, 'utf8');
+  const templateSha256 = fs.readFileSync(path.join(directory, 'compose.sha256'), 'utf8').trim();
+  const networkTemplates = parseNetworkTemplates(template);
+  const allocationPath = path.join(directory, 'allocation.json');
+  const runtimePath = path.join(directory, 'docker-compose.runtime.yml');
+  let previousAllocation = {};
+
+  if (fs.existsSync(allocationPath)) {
+    try {
+      const allocation = JSON.parse(fs.readFileSync(allocationPath, 'utf8'));
+      if (allocation.template_sha256 === templateSha256 && allocation.networks && typeof allocation.networks === 'object') {
+        previousAllocation = allocation.networks;
+      }
+    } catch {
+      previousAllocation = {};
+    }
+  }
+
+  const allocations = Object.keys(networkTemplates).length
+    ? await selectDynamicSubnets(String(challengeID), networkTemplates, previousAllocation, rejectedSubnets)
+    : {};
+  const runtimeYaml = renderComposeTemplate(template, allocations);
+  const runtimeSha256 = crypto.createHash('sha256').update(runtimeYaml, 'utf8').digest('hex');
+  writeFileAtomically(runtimePath, runtimeYaml);
+  writeFileAtomically(allocationPath, `${JSON.stringify({
+    template_sha256: templateSha256,
+    networks: allocations,
+    runtime_sha256: runtimeSha256
+  }, null, 2)}\n`);
+  return { runtimePath, allocations };
+}
+
+function getVerifiedRuntimeComposePath(challengeID) {
+  const templatePath = getVerifiedComposePath(challengeID);
+  const directory = path.dirname(templatePath);
+  const allocationPath = path.join(directory, 'allocation.json');
+  const runtimePath = path.join(directory, 'docker-compose.runtime.yml');
+  if (!fs.existsSync(allocationPath) || !fs.existsSync(runtimePath)) {
+    throw new Error('No hay una configuración Compose renderizada en caché; inicia el reto antes de detenerlo.');
+  }
+  const allocation = JSON.parse(fs.readFileSync(allocationPath, 'utf8'));
+  const runtimeHash = crypto.createHash('sha256').update(fs.readFileSync(runtimePath)).digest('hex');
+  if (!/^[a-f0-9]{64}$/.test(allocation.template_sha256 || '') || allocation.runtime_sha256 !== runtimeHash) {
+    throw new Error('La configuración Compose renderizada está dañada; vuelve a cargar el reto.');
+  }
+  return runtimePath;
+}
 
 function getScriptPath(scriptName) {
   const basePath = app.isPackaged
@@ -18,9 +150,25 @@ function checkDockerInstalled() {
   return new Promise((resolve, reject) => {
     exec('docker --version', (error, stdout, stderr) => {
       if (error) {
-        return reject(new Error('Docker no está instalado o no se encontró. Puedes instalar Docker usando el script de https://github.com/Offensive-Skills/Grafeno/blob/main/setup_docker.sh (para Ubuntu y Kali Linux)'));
+        const dockerError = new Error('Docker no está instalado o no se encontró. Puedes instalar Docker usando el script de https://github.com/Offensive-Skills/Grafeno/blob/main/setup_docker.sh (para Ubuntu y Kali Linux)');
+        dockerError.code = 'DOCKER_MISSING';
+        return reject(dockerError);
       }
-      resolve();
+      if (process.platform !== 'linux') return resolve();
+      exec('docker compose version --short', (composeError, composeVersion) => {
+        const versionMatch = composeVersion?.match(/v?(\d+)\.(\d+)\.(\d+)/);
+        const version = versionMatch?.slice(1).map(Number);
+        const minimumVersion = [2, 33, 1];
+        const meetsMinimum = version && (version[0] > minimumVersion[0]
+          || (version[0] === minimumVersion[0] && version[1] > minimumVersion[1])
+          || (version[0] === minimumVersion[0] && version[1] === minimumVersion[1] && version[2] >= minimumVersion[2]));
+        if (composeError || !meetsMinimum) {
+          const composeErrorMessage = new Error('Docker Compose v2.33.1 o superior es necesario para la selección explícita del gateway de gestión. Instala/actualiza el plugin docker-compose-plugin y reinicia Grafeno.');
+          composeErrorMessage.code = 'COMPOSE_MISSING';
+          return reject(composeErrorMessage);
+        }
+        resolve();
+      });
     });
   });
 }
@@ -46,7 +194,7 @@ function createWindow() {
       mainWindow.loadFile(path.join(__dirname, 'views', 'login', 'login.html'));
     })
     .catch((err) => {
-      console.error(err);
+      startupDockerError = { code: err.code || 'DOCKER_ERROR', message: err.message };
       mainWindow.loadFile(path.join(__dirname, 'views', 'error', 'error.html'));
     });
 
@@ -86,78 +234,187 @@ ipcMain.on('close-app', () => {
   app.quit();
 });
 
-// Docker login
-ipcMain.handle('docker:login', async (_event, username, apiToken) => {
-  const harbor = 'harbor.offs.es';
+ipcMain.handle('docker:get-startup-error', () => startupDockerError);
+
+function dockerLogin(username, apiToken) {
+  if (typeof username !== 'string' || !username.trim() || username.length > 255 || /\s/.test(username)) {
+    return Promise.resolve(false);
+  }
+  if (typeof apiToken !== 'string' || !apiToken || apiToken.length > 4096) return Promise.resolve(false);
   return new Promise((resolve) => {
-    const dockerLogin = spawn('docker', ['login', harbor, '-u', username, '-p', apiToken]);
+    const child = spawn('docker', ['login', 'harbor.offs.es', '-u', username, '--password-stdin']);
+    child.stdout.resume();
+    child.stderr.resume();
+    child.on('close', (code) => resolve(code === 0));
+    child.on('error', () => resolve(false));
+    child.stdin.on('error', () => {});
+    child.stdin.end(`${apiToken}\n`);
+  });
+}
 
-    dockerLogin.stdout.on('data', (data) => {
-      console.log(`STDOUT: ${data}`);
-    });
+ipcMain.handle('docker:login', async (_event, username, apiToken) => {
+  const success = await dockerLogin(username, apiToken);
+  harborCredentials = success ? { username, apiToken } : null;
+  return success;
+});
 
-    dockerLogin.stderr.on('data', (data) => {
-      console.error(`STDERR: ${data}`);
-    });
+function publishDockerProgress(data, operationId) {
+  if (mainWindow && !mainWindow.isDestroyed()) mainWindow.webContents.send('docker:progress', { ...data, operationId });
+}
 
-    dockerLogin.on('close', (code) => {
-      resolve(code === 0);
-    });
+function runManagedScript(scriptName, args, progressMode = 'none', operationId) {
+  return new Promise((resolve, reject) => {
+    const child = spawn('bash', [getScriptPath(scriptName), ...args]);
+    let output = '';
+    let lineBuffer = '';
+    let totalLayers = 0;
+    let completedLayers = 0;
 
-    dockerLogin.on('error', () => {
-      resolve(false);
+    const handleOutput = (data) => {
+      const text = data.toString();
+      output += text;
+      if (output.length > 256 * 1024) output = output.slice(-256 * 1024);
+      lineBuffer += text;
+      if (lineBuffer.length > 64 * 1024) lineBuffer = lineBuffer.slice(-64 * 1024);
+      const lines = lineBuffer.split(/[\r\n]+/);
+      lineBuffer = lines.pop() || '';
+      for (const line of lines) {
+        if (line.startsWith('GRAFENO_STATUS=')) continue;
+        if (progressMode === 'compose') {
+          if (/\bpull\b/i.test(line)) publishDockerProgress({ phase: 'downloading' }, operationId);
+          else if (/\bup\b/i.test(line)) publishDockerProgress({ phase: 'preparing' }, operationId);
+        } else if (progressMode === 'container') {
+          if (line.includes('Pulling fs layer')) totalLayers++;
+          if (line.includes('Download complete') || line.includes('Already exists')) completedLayers++;
+          if (totalLayers > 0) {
+            const percent = Math.min(99, Math.floor((completedLayers / totalLayers) * 100));
+            publishDockerProgress({ percent, phase: 'downloading' }, operationId);
+          } else if (/pull|download/i.test(line)) {
+            publishDockerProgress({ phase: 'downloading' }, operationId);
+          }
+        }
+      }
+    };
+
+    child.stdout.on('data', handleOutput);
+    child.stderr.on('data', handleOutput);
+    child.on('error', reject);
+    child.on('close', (code) => {
+      output += lineBuffer;
+      const status = output.match(/^GRAFENO_STATUS=(ok|error phase=([a-z_]+) reason=([a-z_]+))\s*$/m);
+      if (code === 0 && status?.[1] === 'ok') {
+        publishDockerProgress({ percent: 100, phase: 'done' }, operationId);
+        resolve('Process finished');
+        return;
+      }
+      const error = new Error('No se pudo completar la operación Docker. Revisa que la imagen exista y que tengas permisos en Harbor.');
+      error.phase = status?.[2] || 'unknown';
+      error.reason = status?.[3] || 'script_failed';
+      error.exitCode = code;
+      reject(error);
     });
   });
-});
+}
+
+async function runManagedScriptWithAuthRetry(scriptName, args, progressMode, operationId) {
+  try {
+    return await runManagedScript(scriptName, args, progressMode, operationId);
+  } catch (error) {
+    if (error.phase !== 'pull' || error.reason !== 'unauthorized' || !harborCredentials) throw error;
+    publishDockerProgress({ phase: 'authenticating' }, operationId);
+    const authenticated = await dockerLogin(harborCredentials.username, harborCredentials.apiToken);
+    if (!authenticated) throw new Error('La sesión de Harbor ha caducado o no tienes permisos para descargar esta imagen.');
+    return runManagedScript(scriptName, args, progressMode, operationId);
+  }
+}
 
 // Docker: ejecutar contenedor (con streaming de progreso)
 ipcMain.handle('docker:run-container', async (_event, title, version, mode) => {
-  const scriptPath = getScriptPath('containerManager.sh');
   const domain = 'harbor.offs.es/challenges/';
+  const operationId = `${title}${version}`;
+  return runManagedScriptWithAuthRetry('containerManager.sh', [domain, String(title), String(version), String(mode)], 'container', operationId);
+});
 
-  return new Promise((resolve, reject) => {
-    const child = spawn('bash', [scriptPath, domain, title, version, mode]);
+ipcMain.handle('compose:cache', async (_event, challengeID, composeYaml, composeSha256) => {
+  cacheCompose(challengeID, composeYaml, composeSha256);
+  return true;
+});
 
-    let totalLayers = 0;
-    let downloadedLayers = 0;
-    let downloadPhaseComplete = false;
+async function runComposeStartWithNetworkRetry(challengeID) {
+  const rejectedSubnets = {};
+  let lastConflict = null;
+  const maxAttempts = 5;
 
-    child.stdout.on('data', (data) => {
-      const output = data.toString();
-      const lines = output.split('\n');
-      lines.forEach(line => {
-        if (line.includes('Pulling fs layer')) totalLayers++;
-        if (line.includes('Download complete') || line.includes('Already exists')) {
-          downloadedLayers++;
-        }
-      });
-
-      if (totalLayers > 0 && mainWindow) {
-        if (downloadedLayers < totalLayers) {
-          const percent = Math.floor((downloadedLayers / totalLayers) * 100);
-          mainWindow.webContents.send('docker:progress', { percent, phase: 'downloading' });
-        } else if (!downloadPhaseComplete) {
-          downloadPhaseComplete = true;
-          mainWindow.webContents.send('docker:progress', { percent: 100, phase: 'preparing' });
-        }
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    const { runtimePath, allocations } = await prepareRuntimeCompose(challengeID, rejectedSubnets);
+    try {
+      const result = await runManagedScriptWithAuthRetry(
+        'composeManager.sh',
+        ['start', challengeID, runtimePath],
+        'compose',
+        `compose-${challengeID}`
+      );
+      const conflicts = await findPostUpConflicts(challengeID, allocations);
+      if (Object.keys(conflicts).length === 0) return result;
+      const unallocatedNetworkConflicts = Object.keys(conflicts).filter((name) => !Object.hasOwn(allocations, name));
+      if (unallocatedNetworkConflicts.length > 0) {
+        await runManagedScriptWithAuthRetry(
+          'composeManager.sh',
+          ['stop', challengeID, runtimePath],
+          'none',
+          `compose-${challengeID}`
+        );
+        throw new Error(`Docker asignó una bridge en un prefijo que se solapa con rutas del host: ${unallocatedNetworkConflicts.join(', ')}. Revisa default-address-pools de Docker.`);
       }
-    });
+      lastConflict = new Error(`La red asignada se solapó con una ruta que apareció durante el arranque: ${Object.values(conflicts).join(', ')}`);
+      Object.assign(rejectedSubnets, Object.fromEntries(
+        Object.entries(conflicts).map(([name, cidr]) => [name, [...(rejectedSubnets[name] || []), cidr]])
+      ));
+    } catch (error) {
+      if (error.phase !== 'up' || error.reason !== 'network_conflict') throw error;
+      lastConflict = error;
+      for (const [name, cidr] of Object.entries(allocations)) {
+        rejectedSubnets[name] = [...(rejectedSubnets[name] || []), cidr];
+      }
+    }
 
-    child.stderr.on('data', (data) => {
-      console.error(`Docker STDERR: ${data}`);
-    });
+    await runManagedScriptWithAuthRetry(
+      'composeManager.sh',
+      ['stop', challengeID, runtimePath],
+      'none',
+      `compose-${challengeID}`
+    );
+  }
 
-    child.on('close', (code) => {
-      if (code === 0) {
-        if (mainWindow) mainWindow.webContents.send('docker:progress', { percent: 100, phase: 'done' });
-        resolve('Process finished');
+  throw new Error(`No se encontró una red libre tras ${maxAttempts} intentos. Revisa rutas locales/VPNs. Último conflicto: ${lastConflict?.message || 'desconocido'}`);
+}
+
+ipcMain.handle('compose:run', async (_event, challengeID, mode) => {
+  if (process.platform !== 'linux') throw new Error('Docker Compose solo está disponible en Linux.');
+  if (!['start', 'stop'].includes(mode)) throw new Error('Modo Compose inválido.');
+  const id = String(challengeID);
+  if (composeOperations.has(id)) throw new Error('Ya hay una operación en curso para este reto.');
+  composeOperations.add(id);
+  try {
+    if (mode === 'start') return await runComposeStartWithNetworkRetry(id);
+    const runtimePath = getVerifiedRuntimeComposePath(id);
+    return await runManagedScriptWithAuthRetry('composeManager.sh', ['stop', id, runtimePath], 'none', `compose-${id}`);
+  } finally {
+    composeOperations.delete(id);
+  }
+});
+
+ipcMain.handle('compose:check', async (_event, challengeID) => {
+  if (process.platform !== 'linux') return 'Inactive';
+  const scriptPath = getScriptPath('checkCompose.sh');
+  return new Promise((resolve) => {
+    execFile('bash', [scriptPath, String(challengeID)], (error, stdout) => {
+      if (error) {
+        console.error('Error al ejecutar checkCompose.sh:', error.message);
+        resolve('Inactive');
       } else {
-        reject(new Error(`Process exited with code ${code}`));
+        resolve(stdout.trim() || 'Inactive');
       }
-    });
-
-    child.on('error', (err) => {
-      reject(err);
     });
   });
 });
@@ -317,4 +574,3 @@ app.on('activate', () => {
     createWindow();
   }
 });
-
