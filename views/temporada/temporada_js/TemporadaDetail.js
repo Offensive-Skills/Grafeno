@@ -83,6 +83,9 @@ class TemporadaDetail {
     const urlDisplay = document.createElement('div');
     urlDisplay.classList.add('temporada-url');
     urlDisplay.textContent = challenge.server_ip || 'No hay URL disponible';
+    if (challenge.server_ip) {
+      urlDisplay.addEventListener('click', () => copyWithFeedback(challenge.server_ip, urlDisplay));
+    }
     
     // Agregar elementos al contenedor
     this.container.appendChild(titleElem);

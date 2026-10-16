@@ -118,4 +118,38 @@ body.dark-theme {
     font-size: 24px;
     font-family: 'Courier Prime', Courier, monospace;
   }
+
+  /* URL del módulo: pulsable para copiar */
+  .module-url {
+    margin-top: 15px;
+    font-size: 18px;
+    font-weight: bold;
+    color: #00aaff;
+    text-align: center;
+    padding: 10px 0;
+    cursor: pointer;
+    position: relative;
+  }
+
+  /* Feedback al copiar al portapapeles */
+  .copy-feedback {
+    position: absolute;
+    font-size: 11px;
+    background: #3f3f3f;
+    color: #beefbe;
+    padding: 2px 6px;
+    border-radius: 3px;
+    white-space: nowrap;
+    margin-left: 4px;
+    opacity: 0;
+    pointer-events: none;
+    z-index: 5;
+    animation: copy-fade 1.5s forwards;
+  }
+
+  @keyframes copy-fade {
+    15% { opacity: 1; }
+    80% { opacity: 1; }
+    100% { opacity: 0; }
+  }
   

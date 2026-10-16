@@ -46,9 +46,11 @@ class DockerManager {
     section.append(ipContainer, buttons);
 
     const key = useCompose ? `compose-${challenge.id}` : `${challenge.name}${challenge.version}`;
+    ipSpan.classList.add('ip-copyable');
     ipSpan.addEventListener('click', () => {
+      ipSpan.querySelector('.copy-feedback')?.remove();
       const ip = ipSpan.textContent.trim();
-      if (ip && ip !== 'Inactive') navigator.clipboard.writeText(ip);
+      if (ip && ip !== 'Inactive') copyWithFeedback(ip, ipSpan);
     });
 
     const setBusy = (busy) => {

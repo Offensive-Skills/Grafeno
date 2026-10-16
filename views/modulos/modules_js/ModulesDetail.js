@@ -67,6 +67,9 @@ class ModulesDetail {
     const urlDisplay = document.createElement('div');
     urlDisplay.classList.add('module-url');
     urlDisplay.textContent = module.url || 'No hay URL disponible';
+    if (module.url) {
+      urlDisplay.addEventListener('click', () => copyWithFeedback(module.url, urlDisplay));
+    }
     
     // Agregar elementos al contenedor
     this.container.appendChild(titleElem);
