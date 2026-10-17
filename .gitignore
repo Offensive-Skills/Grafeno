@@ -9,7 +9,8 @@ dist/
 direnv.local
 
 # Images
-images/
+images/*
+!images/installation/
 
 # AGENTS
 AGENTS.md
