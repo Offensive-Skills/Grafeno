@@ -6,7 +6,7 @@ Grafeno is available on the [Offensive Skills tools page](https://offs.es/tools)
 
 Download the installer binary from the [Offensive Skills tools page](https://offs.es/tools) and select the right download for your system:
 
-![](images/installation/seleccionar_correcto_grafeno.png)
+![](images/installation/seleccionar_correcto_grafeno_EN.png)
 
 Once the `.deb` file has been downloaded, install it with the following command:
 
@@ -14,7 +14,7 @@ Once the `.deb` file has been downloaded, install it with the following command:
 sudo dpkg -i grafeno_2.0.2_amd64.deb
 ```
 
-![](images/installation/comando_dpkg_grafeno.png)
+![](images/installation/comando_dpkg_grafeno_EN.png)
 
 As soon as the command finishes, Grafeno is installed. You can launch it by running `grafeno` in a terminal, or by opening it from your system's application menu.
 
@@ -22,7 +22,7 @@ As soon as the command finishes, Grafeno is installed. You can launch it by runn
 
 The first time you open Grafeno, you will see the following screen:
 
-![](images/installation/login_grafeno.png)
+![](images/installation/login_grafeno_EN.png)
 
 You need to enter:
 
@@ -31,7 +31,7 @@ You need to enter:
 
 To get those credentials, first [**sign up on the Offensive Skills website**](https://offs.es/register): fill in the registration form and validate your email. Then go to the [**API token page**](https://offs.es/dashboard/api-token) and generate a new token.
 
-![](images/installation/api-token-page.png)
+![](images/installation/api-token-page_EN.png)
 
 Once the token has been generated, enter it in Grafeno together with your username and log in.
 
@@ -39,7 +39,7 @@ Once the token has been generated, enter it in Grafeno together with your userna
 
 After logging in, you will see a window like the one below:
 
-![](images/installation/main_grafeno.png)
+![](images/installation/main_grafeno_EN.png)
 
 The two main sections are:
 
@@ -50,4 +50,4 @@ The two main sections are:
 
 To deploy a challenge — for example, an LFI one — open the LFI course, enter one of its modules, and use the Docker management buttons to launch the container, as shown in the following image:
 
-![](images/installation/deploy_container.png)
+![](images/installation/deploy_container_EN.png)
