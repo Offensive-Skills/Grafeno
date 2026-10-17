@@ -167,7 +167,23 @@ function checkDockerInstalled() {
           composeErrorMessage.code = 'COMPOSE_MISSING';
           return reject(composeErrorMessage);
         }
-        resolve();
+        exec('docker info', (infoError, infoStdout, infoStderr) => {
+          if (!infoError) return resolve();
+          const combined = `${infoStdout || ''}${infoStderr || ''}`;
+          if (/permission denied|not a docker group|docker\.sock/i.test(combined) || infoError.code === 13) {
+            const permError = new Error('Tu usuario no tiene permisos para comunicarse con Docker. Falta añadirlo al grupo docker.');
+            permError.code = 'DOCKER_PERM_MISSING';
+            return reject(permError);
+          }
+          if (/Is the docker daemon running|Cannot connect to the Docker daemon|connection refused/i.test(combined)) {
+            const daemonError = new Error('El servicio de Docker no está iniciado. Inícialo con: sudo systemctl start docker');
+            daemonError.code = 'DOCKER_DAEMON_STOPPED';
+            return reject(daemonError);
+          }
+          const genericError = new Error('No se pudo conectar con Docker: ' + combined.trim());
+          genericError.code = 'DOCKER_ERROR';
+          return reject(genericError);
+        });
       });
     });
   });
@@ -485,11 +501,76 @@ ipcMain.handle('clipboard:write', async (_event, text) => {
 });
 
 // Docker: instalar Docker en el sistema
+let activeInstallChild = null;
+let activeInstallTimer = null;
+
+function terminateInstallProcess(signal = 'SIGTERM') {
+  if (!activeInstallChild) return;
+  const child = activeInstallChild;
+  try {
+    child.kill(signal);
+  } catch (_err) {
+    // El proceso ya terminó o no admite la señal
+  }
+  setTimeout(() => {
+    try {
+      if (child.exitCode === null && child.signalCode === null) child.kill('SIGKILL');
+    } catch (_err) {
+      // El proceso ya terminó
+    }
+  }, 3000).unref();
+}
+
+ipcMain.handle('docker:cancel-install', () => {
+  if (!activeInstallChild) return { cancelled: false };
+  if (activeInstallTimer) {
+    clearTimeout(activeInstallTimer);
+    activeInstallTimer = null;
+  }
+  terminateInstallProcess('SIGTERM');
+  activeInstallChild = null;
+  return { cancelled: true };
+});
+
 ipcMain.handle('docker:install', async (_event, password) => {
-  const installCmd = "command -v curl >/dev/null 2>&1 || { echo 'Error: curl no está instalado. Instálalo con: sudo apt install curl'; exit 1; }; set -o pipefail; curl -fsSL 'https://raw.githubusercontent.com/Offensive-Skills/Grafeno/main/setup_docker.sh' | bash -s";
+  const localScriptPath = app.isPackaged
+    ? path.join(process.resourcesPath, 'app.asar.unpacked', 'setup_docker.sh')
+    : path.join(app.getAppPath(), 'setup_docker.sh');
+  const scriptExists = fs.existsSync(localScriptPath);
+
+  let installCmd;
+  if (scriptExists) {
+    installCmd = `bash '${localScriptPath.replace(/'/g, "'\\''")}'`;
+  } else {
+    const repoUrl = 'https://raw.githubusercontent.com/Offensive-Skills/Grafeno/main/setup_docker.sh';
+    installCmd = [
+      'command -v curl >/dev/null 2>&1 && {',
+      `  curl -fsSL '${repoUrl}' | bash -s`,
+      '} || command -v wget >/dev/null 2>&1 && {',
+      `  wget -qO- '${repoUrl}' | bash -s`,
+      '} || {',
+      '  apt-get update -y && apt-get install -y curl &&',
+      `  curl -fsSL '${repoUrl}' | bash -s`,
+      '}'
+    ].join('\n');
+  }
 
   return new Promise((resolve, reject) => {
-    const child = spawn('sudo', ['-S', 'bash', '-c', installCmd]);
+    const child = spawn('sudo', ['-S', 'bash', '-c', installCmd], {
+      detached: false
+    });
+    activeInstallChild = child;
+
+    const clearTimer = () => {
+      if (activeInstallTimer) {
+        clearTimeout(activeInstallTimer);
+        activeInstallTimer = null;
+      }
+    };
+
+    activeInstallTimer = setTimeout(() => {
+      terminateInstallProcess('SIGTERM');
+    }, 10 * 60 * 1000);
 
     child.stdin.write(password + '\n');
     child.stdin.end();
@@ -511,13 +592,45 @@ ipcMain.handle('docker:install', async (_event, password) => {
       }
     });
 
-    child.on('close', (code) => {
-      resolve({ success: code === 0, output });
-    });
-
     child.on('error', (err) => {
+      if (activeInstallChild === child) {
+        activeInstallChild = null;
+        clearTimer();
+      }
       reject(err);
     });
+
+    child.on('close', (code, signal) => {
+      if (activeInstallChild === child) {
+        activeInstallChild = null;
+        clearTimer();
+      }
+      if (signal === 'SIGTERM' || signal === 'SIGKILL') {
+        resolve({ success: false, output, cancelled: true });
+        return;
+      }
+      resolve({ success: code === 0, output });
+    });
+  });
+});
+
+// Docker: iniciar el servicio del daemon (daemon detenido)
+ipcMain.handle('docker:start-service', async (_event, password) => {
+  return new Promise((resolve, reject) => {
+    const child = spawn('sudo', ['-S', 'systemctl', 'start', 'docker']);
+    child.stdin.write(password + '\n');
+    child.stdin.end();
+
+    let output = '';
+    const stripAnsi = (text) => text.replace(/\x1B\[[0-9;]*[a-zA-Z]/g, '').replace(/\r/g, '');
+
+    child.stderr.on('data', (data) => {
+      const text = stripAnsi(data.toString());
+      if (!text.includes('[sudo]') && !text.includes('password for')) output += text;
+    });
+
+    child.on('error', (err) => reject(err));
+    child.on('close', (code) => resolve({ success: code === 0, output }));
   });
 });
 

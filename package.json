@@ -46,7 +46,8 @@
     "productName": "Grafeno",
     "asar": true,
     "asarUnpack": [
-      "scripts/**"
+      "scripts/**",
+      "setup_docker.sh"
     ],
     "publish": [
       {
@@ -62,6 +63,7 @@
       "views/**",
       "assets/**",
       "scripts/**",
+      "setup_docker.sh",
       "package.json"
     ],
     "directories": {

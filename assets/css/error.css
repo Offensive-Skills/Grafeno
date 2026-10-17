@@ -310,4 +310,16 @@ body {
   #installButton {
     margin-bottom: 10px;
   }
+
+  #cancelInstallButton {
+    margin-bottom: 10px;
+    background-color: #4a3038;
+    color: #e8a0ab;
+  }
+
+  #cancelInstallButton:hover {
+    background-color: #2f3136;
+    color: #e8758a;
+    border: 1px solid #e8758a;
+  }
   

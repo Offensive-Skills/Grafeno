@@ -36,6 +36,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
   // Docker install
   installDocker: (password) => ipcRenderer.invoke('docker:install', password),
+  cancelDockerInstall: () => ipcRenderer.invoke('docker:cancel-install'),
+  startDockerService: (password) => ipcRenderer.invoke('docker:start-service', password),
   onDockerInstallOutput: (callback) => {
     const handler = (_event, data) => callback(data);
     ipcRenderer.on('docker:install-output', handler);
