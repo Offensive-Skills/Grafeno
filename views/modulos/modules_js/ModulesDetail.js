@@ -14,16 +14,16 @@ class ModulesDetail {
     // Descripción
     const descElem = document.createElement('div');
     descElem.classList.add('description');
-    descElem.textContent = module.description || 'Sin descripción';
+    descElem.textContent = module.description || window.i18n.t('modulos.noDesc');
     
     // Fila para flag (input + botón)
     const flagRow = document.createElement('div');
     flagRow.classList.add('flag-row');
     const inputFlag = document.createElement('input');
     inputFlag.type = 'text';
-    inputFlag.placeholder = 'Introduce la flag';
+    inputFlag.placeholder = window.i18n.t('detail.flagPlaceholder');
     const btnEnviarFlag = document.createElement('button');
-    btnEnviarFlag.textContent = 'Enviar flag';
+    btnEnviarFlag.textContent = window.i18n.t('detail.sendFlag');
     flagRow.appendChild(inputFlag);
     flagRow.appendChild(btnEnviarFlag);
     
@@ -36,12 +36,12 @@ class ModulesDetail {
     if (module.has_file) {
       btnDescargarArchivo = document.createElement('button');
       btnDescargarArchivo.classList.add('btn-descargar-archivo');
-      btnDescargarArchivo.textContent = 'Descargar archivos del módulo';
+      btnDescargarArchivo.textContent = window.i18n.t('modulos.download');
       btnDescargarArchivo.addEventListener('click', async () => {
         try {
           const response = await api.getFiles({ token: config.api_token, challengeID: module.id });
           if (!response.ok) {
-            throw new Error(`Error HTTP: ${response.status}`);
+            throw new Error(window.i18n.t('detail.httpError', { status: response.status }));
           }
           const blob = await response.blob();
           const arrayBuffer = await blob.arrayBuffer();
@@ -66,7 +66,7 @@ class ModulesDetail {
     // Mostrar la URL del módulo en grande
     const urlDisplay = document.createElement('div');
     urlDisplay.classList.add('module-url');
-    urlDisplay.textContent = module.url || 'No hay URL disponible';
+    urlDisplay.textContent = module.url || window.i18n.t('detail.noUrl');
     if (module.url) {
       urlDisplay.addEventListener('click', () => copyWithFeedback(module.url, urlDisplay));
     }
@@ -83,7 +83,7 @@ class ModulesDetail {
     btnEnviarFlag.addEventListener('click', async () => {
       const flagValue = inputFlag.value.trim();
       if (!flagValue) {
-        flagResult.textContent = 'Introduce una flag.';
+        flagResult.textContent = window.i18n.t('detail.enterFlag');
         flagResult.style.color = '#ff4f4f';
         return;
       }
@@ -99,17 +99,17 @@ class ModulesDetail {
           body: JSON.stringify(data)
         });
         if (response.status === 200) {
-          flagResult.textContent = '¡Flag correcta!';
+          flagResult.textContent = window.i18n.t('detail.correct');
           flagResult.style.color = '#beefbe';
           module.completed = true;
           if (typeof onFlagComplete === 'function') onFlagComplete(module);
         } else {
-          flagResult.textContent = 'Flag incorrecta.';
+          flagResult.textContent = window.i18n.t('detail.wrong');
           flagResult.style.color = '#ff4f4f';
         }
       } catch (error) {
         console.error('Error al enviar flag:', error);
-        flagResult.textContent = 'Error al enviar la flag.';
+        flagResult.textContent = window.i18n.t('detail.sendError');
         flagResult.style.color = '#ff4f4f';
       }
     });

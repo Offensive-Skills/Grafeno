@@ -14,16 +14,16 @@ class TemporadaDetail {
     // Descripción
     const descElem = document.createElement('div');
     descElem.classList.add('description');
-    descElem.textContent = challenge.description || 'Sin descripción';
+    descElem.textContent = challenge.description || window.i18n.t('detail.noDesc');
     
     // Fila para flag (input + botón)
     const flagRow = document.createElement('div');
     flagRow.classList.add('flag-row');
     const inputFlag = document.createElement('input');
     inputFlag.type = 'text';
-    inputFlag.placeholder = 'Introduce la flag';
+    inputFlag.placeholder = window.i18n.t('detail.flagPlaceholder');
     const btnEnviarFlag = document.createElement('button');
-    btnEnviarFlag.textContent = 'Enviar flag';
+    btnEnviarFlag.textContent = window.i18n.t('detail.sendFlag');
     flagRow.appendChild(inputFlag);
     flagRow.appendChild(btnEnviarFlag);
     
@@ -36,7 +36,7 @@ class TemporadaDetail {
     if (challenge.has_file) {
       btnDescargarArchivo = document.createElement('button');
       btnDescargarArchivo.classList.add('btn-descargar-archivo');
-      btnDescargarArchivo.textContent = 'Descargar archivos del reto';
+      btnDescargarArchivo.textContent = window.i18n.t('detail.download');
       btnDescargarArchivo.addEventListener('click', async () => {
         let downloadStatus = document.getElementById('download-status');
         if (!downloadStatus) {
@@ -68,7 +68,7 @@ class TemporadaDetail {
           }
           
           const filePath = await window.electronAPI.saveChallenge(destFolder, challenge.name, arrayBuffer);
-          downloadStatus.textContent = `Archivo guardado en: ${filePath}`;
+          downloadStatus.textContent = window.i18n.t('detail.saved', { path: filePath });
           downloadStatus.style.color = '#00aaff';
         } catch (err) {
           console.error('Error al descargar archivos del reto:', err);
@@ -82,7 +82,7 @@ class TemporadaDetail {
     // Mostrar la URL del reto en grande
     const urlDisplay = document.createElement('div');
     urlDisplay.classList.add('temporada-url');
-    urlDisplay.textContent = challenge.server_ip || 'No hay URL disponible';
+    urlDisplay.textContent = challenge.server_ip || window.i18n.t('detail.noUrl');
     if (challenge.server_ip) {
       urlDisplay.addEventListener('click', () => copyWithFeedback(challenge.server_ip, urlDisplay));
     }
@@ -99,7 +99,7 @@ class TemporadaDetail {
     btnEnviarFlag.addEventListener('click', async () => {
       const flagValue = inputFlag.value.trim();
       if (!flagValue) {
-        flagResult.textContent = 'Introduce una flag.';
+        flagResult.textContent = window.i18n.t('detail.enterFlag');
         flagResult.style.color = '#ff4f4f';
         return;
       }
@@ -108,17 +108,17 @@ class TemporadaDetail {
         const flag = flagValue
         const response = await api.submitChallenge({ flag, challengeID, token });
         if (!response.error) {
-          flagResult.textContent = '¡Flag correcta!';
+          flagResult.textContent = window.i18n.t('detail.correct');
           flagResult.style.color = '#00aaff';
           challenge.completed = true;
           if (typeof onFlagComplete === 'function') onFlagComplete(challenge);
         } else {
-          flagResult.textContent = 'Flag incorrecta.';
+          flagResult.textContent = window.i18n.t('detail.wrong');
           flagResult.style.color = '#ff4f4f';
         }
       } catch (error) {
         console.error('Error al enviar flag:', error);
-        flagResult.textContent = 'Error al enviar la flag.';
+        flagResult.textContent = window.i18n.t('detail.sendError');
         flagResult.style.color = '#ff4f4f';
       }
     });

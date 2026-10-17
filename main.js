@@ -648,11 +648,14 @@ autoUpdater.on('update-available', (info) => {
 
 autoUpdater.on('update-downloaded', (info) => {
   console.log('Actualización descargada:', info);
+  const updaterStrings = (app.getLocale() || 'es').startsWith('en')
+    ? { title: 'Update available', message: 'The update has been downloaded. Restart the application to install it?', buttons: ['Restart', 'Later'] }
+    : { title: 'Actualización disponible', message: 'La actualización se ha descargado. ¿Deseas reiniciar la aplicación para instalarla?', buttons: ['Reiniciar', 'Más tarde'] };
   const dialogOptions = {
     type: 'info',
-    title: 'Actualización disponible',
-    message: 'La actualización se ha descargado. ¿Deseas reiniciar la aplicación para instalarla?',
-    buttons: ['Reiniciar', 'Más tarde']
+    title: updaterStrings.title,
+    message: updaterStrings.message,
+    buttons: updaterStrings.buttons
   };
 
   const showDialog = mainWindow && !mainWindow.isDestroyed()

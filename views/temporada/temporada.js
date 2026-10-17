@@ -45,11 +45,11 @@ async function fetchChallenges() {
     } else if (currentChallenges.length > 0) {
       showChallengeDetail(currentChallenges[0]);
     } else {
-      document.getElementById('temporada-detail').innerHTML = `<p style="text-align:center; margin-top:20px; color:#ccc;">No se encontraron retos de temporada</p>`;
+      document.getElementById('temporada-detail').innerHTML = `<p style="text-align:center; margin-top:20px; color:#ccc;">${window.i18n.t('temporada.empty')}</p>`;
     }
   } catch (error) {
     console.error(error);
-    alert('Error al obtener retos de temporada. Revisa la consola para más detalles.');
+    alert(window.i18n.t('temporada.error'));
   }
 }
 

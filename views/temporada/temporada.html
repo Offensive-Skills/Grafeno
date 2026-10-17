@@ -2,7 +2,7 @@
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
-    <title>Temporada - Grafeno</title>
+    <title data-i18n="title.temporada">Temporada - Grafeno</title>
     <link rel="stylesheet" href="../../assets/css/temporada.css" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link href="https://fonts.googleapis.com/css2?family=Courier+Prime&display=swap" rel="stylesheet" />
@@ -12,7 +12,7 @@
     <canvas id="bgCanvas"></canvas>
     <div class="temporada-overlay">
       <div class="top-bar">
-        <button id="btn-atras" class="bar-button-atras">Atrás</button>
+        <button id="btn-atras" class="bar-button-atras" data-i18n="config.back">Atrás</button>
       </div>
       <div class="main-content">
         <!-- Panel izquierdo: Lista de retos -->
@@ -28,6 +28,7 @@
     <script src="../shared/RetosList.js"></script>
     <script src="temporada_js/TemporadaDetail.js"></script>
     <script src="../background/background_blue.js"></script>
+    <script src="../shared/i18n.js"></script>
     <script src="temporada.js"></script>
   </body>
 </html>

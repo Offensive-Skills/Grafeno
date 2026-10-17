@@ -26,7 +26,7 @@ async function loadRanking() {
     renderRanking(rankingData, currentUser);
   } catch (error) {
     console.error('Error al cargar el ranking:', error);
-    alert('Error al cargar el ranking');
+    alert(window.i18n.t('ranking.error'));
   }
 }
 

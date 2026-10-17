@@ -20,24 +20,24 @@ window.addEventListener('DOMContentLoaded', () => {
 
   const STATES = {
     DOCKER_MISSING: {
-      title: 'Docker no está instalado',
-      description: 'Grafeno necesita Docker para funcionar. Puedes instalarlo directamente desde aquí.',
-      buttonText: 'Instalar Docker'
+      titleKey: 'error.dockerMissing.title',
+      descKey: 'error.dockerMissing.desc',
+      buttonKey: 'error.dockerMissing.btn'
     },
     COMPOSE_MISSING: {
-      title: 'Docker Compose v2 requiere instalación o actualización',
-      description: 'Grafeno necesita Docker Compose v2.33.1 o superior. Puedes instalarlo o actualizarlo directamente desde aquí.',
-      buttonText: 'Instalar / actualizar Docker Compose'
+      titleKey: 'error.composeMissing.title',
+      descKey: 'error.composeMissing.desc',
+      buttonKey: 'error.composeMissing.btn'
     },
     DOCKER_PERM_MISSING: {
-      title: 'Tu usuario no pertenece al grupo docker',
-      description: 'Docker está instalado, pero tu usuario no tiene permisos para usarlo. Introduce tu contraseña para añadirlo al grupo docker.',
-      buttonText: 'Añadir mi usuario al grupo docker'
+      titleKey: 'error.permMissing.title',
+      descKey: 'error.permMissing.desc',
+      buttonKey: 'error.permMissing.btn'
     },
     DOCKER_DAEMON_STOPPED: {
-      title: 'El servicio Docker no está iniciado',
-      description: 'Docker está instalado, pero su servicio no está en ejecución. Introduce tu contraseña para iniciarlo.',
-      buttonText: 'Iniciar servicio Docker'
+      titleKey: 'error.daemonStopped.title',
+      descKey: 'error.daemonStopped.desc',
+      buttonKey: 'error.daemonStopped.btn'
     }
   };
 
@@ -70,16 +70,16 @@ window.addEventListener('DOMContentLoaded', () => {
 
   function applyState(state) {
     const config = STATES[state] || STATES.DOCKER_MISSING;
-    errorTitle.textContent = config.title;
-    errorDescription.textContent = config.description;
-    installButton.textContent = config.buttonText;
+    errorTitle.textContent = window.i18n.t(config.titleKey);
+    errorDescription.textContent = window.i18n.t(config.descKey);
+    installButton.textContent = window.i18n.t(config.buttonKey);
 
     if (state === 'COMPOSE_MISSING') {
-      infoBox.innerHTML = '<p>Se añadirá el repositorio oficial de Docker y se instalará o actualizará el plugin <code>docker-compose-plugin</code>.</p>';
+      infoBox.innerHTML = `<p>${window.i18n.t('error.composeInfoBox')}</p>`;
     } else if (state === 'DOCKER_PERM_MISSING') {
-      infoBox.innerHTML = '<p>Se añadirá tu usuario al grupo <strong>docker</strong>. Después deberás cerrar y volver a iniciar la sesión para que el cambio surta efecto.</p>';
+      infoBox.innerHTML = `<p>${window.i18n.t('error.permInfoBox')}</p>`;
     } else if (state === 'DOCKER_DAEMON_STOPPED') {
-      infoBox.innerHTML = '<p>Se ejecutará <code>sudo systemctl start docker</code> para arrancar el servicio.</p>';
+      infoBox.innerHTML = `<p>${window.i18n.t('error.daemonInfoBox')}</p>`;
     }
 
     // El estado de servicio parado usa otro flujo (systemctl), el resto el script de instalación
@@ -92,21 +92,21 @@ window.addEventListener('DOMContentLoaded', () => {
     buttonRow.style.display = 'none';
     hideStatus();
     if (reloginNeeded) {
-      document.querySelector('.action-title').textContent = 'Cierra sesión y vuelve a iniciarla';
-      document.querySelector('.action-text').innerHTML = 'El cambio de grupo <strong>docker</strong> necesita una nueva sesión de trabajo.';
+      document.querySelector('.action-title').textContent = window.i18n.t('error.actionTitleRelogin');
+      document.querySelector('.action-text').innerHTML = window.i18n.t('error.actionTextRelogin');
     } else {
-      document.querySelector('.action-title').textContent = 'Reinicia Grafeno';
-      document.querySelector('.action-text').textContent = 'La operación se ha completado correctamente. Reinicia Grafeno para volver a comprobar Docker.';
+      document.querySelector('.action-title').textContent = window.i18n.t('error.actionTitleRestart');
+      document.querySelector('.action-text').textContent = window.i18n.t('error.actionTextRestart');
     }
     const steps = document.querySelector('.action-steps');
     if (reloginNeeded) {
-      steps.innerHTML = '<li><span class="step-num">1</span><span>Cierra la sesión actual</span></li>'
-        + '<li><span class="step-num">2</span><span>Vuelve a iniciar sesión</span></li>'
-        + '<li><span class="step-num">3</span><span>Abre Grafeno</span></li>';
-      closeGrafenoButton.textContent = 'Cerrar Grafeno';
+      steps.innerHTML = `<li><span class="step-num">1</span><span>${window.i18n.t('error.step1')}</span></li>`
+        + `<li><span class="step-num">2</span><span>${window.i18n.t('error.step2')}</span></li>`
+        + `<li><span class="step-num">3</span><span>${window.i18n.t('error.step3')}</span></li>`;
+      closeGrafenoButton.textContent = window.i18n.t('error.closeGrafeno');
     } else {
       steps.style.display = 'none';
-      closeGrafenoButton.textContent = 'Reiniciar Grafeno';
+      closeGrafenoButton.textContent = window.i18n.t('error.restartGrafeno');
     }
     actionRequired.style.display = 'block';
   }
@@ -115,7 +115,7 @@ window.addEventListener('DOMContentLoaded', () => {
     hideStatus();
     showError(message);
     installButton.disabled = false;
-    installButton.textContent = 'Reintentar';
+    installButton.textContent = window.i18n.t('error.retry');
     passwordInput.disabled = false;
     passwordInput.value = '';
     passwordInput.focus();
@@ -147,7 +147,7 @@ window.addEventListener('DOMContentLoaded', () => {
   cancelInstallButton.addEventListener('click', async () => {
     if (!installRunning) return;
     cancelInstallButton.disabled = true;
-    showLoading('Cancelando...');
+    showLoading(window.i18n.t('error.canceling'));
     await window.electronAPI.cancelDockerInstall();
   });
 
@@ -169,11 +169,11 @@ window.addEventListener('DOMContentLoaded', () => {
 
     const flow = installButton.dataset.flow;
     if (flow === 'start-service') {
-      installButton.textContent = 'Iniciando servicio...';
-      showLoading('Iniciando el servicio Docker...');
+      installButton.textContent = window.i18n.t('error.startingService');
+      showLoading(window.i18n.t('error.startingService'));
     } else {
-      installButton.textContent = 'Instalando...';
-      showLoading('Instalando Docker, esto puede tardar unos minutos...');
+      installButton.textContent = window.i18n.t('error.installing');
+      showLoading(window.i18n.t('error.installing'));
     }
 
     const outputHandler = window.electronAPI.onDockerInstallOutput((text) => {
@@ -196,16 +196,16 @@ window.addEventListener('DOMContentLoaded', () => {
         }
         installRunning = false;
       } else if (result.cancelled) {
-        resetAfterFailure('La instalación se ha cancelado. Inténtalo de nuevo cuando quieras.');
+        resetAfterFailure(window.i18n.t('error.cancelMsg'));
       } else if (isPasswordError(result.output)) {
-        resetAfterFailure('La contraseña es incorrecta. Inténtalo de nuevo.');
+        resetAfterFailure(window.i18n.t('error.wrongPassword'));
       } else {
-        resetAfterFailure('La instalación no se pudo completar. Revisa el registro para más detalles.');
+        resetAfterFailure(window.i18n.t('error.installFail'));
       }
     } catch (err) {
       window.electronAPI.removeDockerInstallOutputListener(outputHandler);
       cancelInstallButton.style.display = 'none';
-      resetAfterFailure('Error inesperado: ' + err.message);
+      resetAfterFailure(window.i18n.t('error.unexpected', { msg: err.message }));
     }
   });
 });

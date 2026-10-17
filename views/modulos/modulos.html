@@ -2,7 +2,7 @@
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
-    <title>Módulos - Grafeno</title>
+    <title data-i18n="title.modulos">Módulos - Grafeno</title>
     <link rel="stylesheet" href="../../assets/css/modulos.css" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link
@@ -15,8 +15,8 @@
     <canvas id="bgCanvas"></canvas>
     <div class="modulos-overlay">
       <div class="top-bar">
-        <button id="btn-atras" class="bar-button-atras">Atrás</button>
-        <h1 class="navbar-title">Módulos del curso <span id="course-title"></span></h1>
+        <button id="btn-atras" class="bar-button-atras" data-i18n="config.back">Atrás</button>
+        <h1 class="navbar-title"><span data-i18n="modulos.prefix">Módulos del curso </span><span id="course-title"></span></h1>
       </div>
       <div class="main-content">
         <div class="modulos-list" id="modulos-list">
@@ -29,6 +29,7 @@
     <script src="../shared/clipboard.js"></script>
     <script src="modules_js/ModulesDetail.js"></script>
     <script src="../background/background.js"></script>
+    <script src="../shared/i18n.js"></script>
     <script src="modulos.js"></script>
   </body>
 </html>

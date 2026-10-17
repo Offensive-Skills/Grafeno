@@ -4,7 +4,7 @@ window.copyWithFeedback = async (text, anchorEl) => {
     await (navigator.clipboard ? navigator.clipboard.writeText(text) : window.electronAPI.writeClipboard(text));
     const feedback = document.createElement('span');
     feedback.classList.add('copy-feedback');
-    feedback.textContent = '¡Copiado al portapapeles!';
+    feedback.textContent = window.i18n.t('clipboard.copied');
     feedback.setAttribute('role', 'status');
     anchorEl.appendChild(feedback);
     setTimeout(() => feedback.remove(), 1600);

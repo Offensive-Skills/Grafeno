@@ -2,7 +2,7 @@
 <html lang="es">
   <head>
     <meta charset="UTF-8">
-    <title>Grafeno - Menú Principal</title>
+    <title data-i18n="title.mainMenu">Grafeno - Menú Principal</title>
     <link rel="stylesheet" href="../../assets/css/mainMenu.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Courier+Prime&display=swap" rel="stylesheet">
@@ -11,15 +11,22 @@
   </head>
   <body class="dark-theme">
     <canvas id="bgCanvas"></canvas>
-    
+
+    <label class="lang-pill">
+      <input type="checkbox" class="lang-switch" />
+      <span class="lang-thumb"></span>
+      <span class="lang-label" data-lang="es"><span class="lang-flag">🇪🇸</span> ES</span>
+      <span class="lang-label" data-lang="en"><span class="lang-flag">🇬🇧</span> EN</span>
+    </label>
+
     <div class="menu-overlay">
       <!-- Lado izquierdo: Botones (35%) -->
       <div class="menu-left">
-        <button id="btn-retos" class="menu-button">Retos</button>
-        <button id="btn-temporada" class="menu-button">Temporada</button>
-        <button id="btn-cursos" class="menu-button">Cursos</button>
-        <button id="btn-ranking" class="menu-button">Ranking</button>
-        <button id="btn-config" class="menu-button">Configuracion</button>
+        <button id="btn-retos" class="menu-button" data-i18n="nav.retos">Retos</button>
+        <button id="btn-temporada" class="menu-button" data-i18n="nav.temporada">Temporada</button>
+        <button id="btn-cursos" class="menu-button" data-i18n="nav.cursos">Cursos</button>
+        <button id="btn-ranking" class="menu-button" data-i18n="nav.ranking">Ranking</button>
+        <button id="btn-config" class="menu-button" data-i18n="nav.config">Configuracion</button>
         
       </div>
       <!-- Lado derecho: Estadísticas (65%) -->
@@ -32,6 +39,7 @@
     
     <script src="../../controllers/apiEndpoints.js"></script>
     <script src="../background/background.js"></script>
+    <script src="../shared/i18n.js"></script>
     <script src="mainMenu.js"></script>
   </body>
 </html>

@@ -18,7 +18,7 @@ const RetosApi = {
         this.renderCourses(courses);
       } catch (error) {
         console.error(error);
-        this.container.innerHTML = `<p class="error">Error al cargar cursos. Revisa la consola para más detalles.</p>`;
+        this.container.innerHTML = `<p class="error">${window.i18n.t('cursos.error')}</p>`;
       }
     }
     
@@ -37,7 +37,7 @@ const RetosApi = {
         
         const level = document.createElement('p');
         level.classList.add('curso-level');
-        level.textContent = `Nivel: ${course.level}`;
+        level.textContent = window.i18n.t('cursos.level', { level: course.level });
         
         const desc = document.createElement('p');
         desc.classList.add('curso-description');

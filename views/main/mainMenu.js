@@ -39,13 +39,13 @@ async function initStats() {
   try {
     const data = await api.getStats({ token: apiToken });
     if (data.error) {
-      alert("Error: " + data.error);
+      alert(window.i18n.t('menu.alertError') + data.error);
     } else {
       renderChart(data);
     }
   } catch (err) {
     console.error("Error al obtener estadísticas:", err);
-    alert("Error al obtener estadísticas.");
+    alert(window.i18n.t('menu.errorStats'));
   }
 }
 
@@ -60,7 +60,7 @@ function renderChart(stats) {
     data: {
       labels: topics,
       datasets: [{
-        label: 'Progreso (%)',
+        label: window.i18n.t('menu.statsLabel'),
         data: percentages,
         backgroundColor: 'rgba(190, 239, 190, 0.2)', // Verde translúcido
         borderColor: '#beefbe',

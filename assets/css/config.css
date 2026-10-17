@@ -60,7 +60,67 @@ body.dark-theme {
     color: #2b2b2b;
   }
   
-  .navbar-title {
+  /* Conmutador de idioma tipo pill con banderas */
+  .lang-pill {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    margin-left: auto;
+    background-color: #3f3f3f;
+    border: 1px solid #beefbe;
+    border-radius: 999px;
+    padding: 3px;
+    font-family: 'Courier Prime', monospace;
+    font-size: 12px;
+    line-height: 1;
+    cursor: pointer;
+    user-select: none;
+  }
+  .lang-pill .lang-label {
+    position: relative;
+    z-index: 2;
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    padding: 5px 14px;
+    color: #9a9a9a;
+    font-weight: bold;
+    white-space: nowrap;
+    transition: color .2s;
+  }
+  .lang-pill .lang-label.active {
+    color: #1a1a1a;
+  }
+  .lang-pill .lang-flag {
+    font-size: 13px;
+    line-height: 1;
+  }
+  .lang-pill .lang-thumb {
+    position: absolute;
+    top: 3px;
+    bottom: 3px;
+    left: 3px;
+    width: calc(50% - 3px);
+    background-color: #beefbe;
+    border-radius: 999px;
+    z-index: 1;
+    transition: transform .2s ease;
+  }
+  .lang-switch {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    opacity: 0;
+    cursor: pointer;
+    z-index: 4;
+  }
+  .lang-pill .lang-switch:checked ~ .lang-thumb {
+    transform: translateX(100%);
+  }
+
+.navbar-title {
     flex: 1;
     text-align: center;
     color: #beefbe;

@@ -16,7 +16,7 @@ window.addEventListener('DOMContentLoaded', async () => {
   // Obtener el ID del módulo
   const module_id = localStorage.getItem('currentModuleId');
   if (!module_id) {
-    alert('No se ha definido el module_id');
+    alert(window.i18n.t('retosModulos.noModule'));
     return;
   }
   await fetchChallenges(module_id);
@@ -36,11 +36,11 @@ async function fetchChallenges(module_id) {
     if (currentChallenges.length > 0) {
       showChallengeDetail(currentChallenges[0]);
     } else {
-      document.getElementById('reto-detail').innerHTML = `<p style="text-align:center; margin-top:20px; color:#ccc;">No se encontraron retos para este módulo</p>`;
+      document.getElementById('reto-detail').innerHTML = `<p style="text-align:center; margin-top:20px; color:#ccc;">${window.i18n.t('modulos.noRetos')}</p>`;
     }
   } catch (error) {
     console.error(error);
-    alert('Error al obtener retos. Revisa la consola para más detalles.');
+    alert(window.i18n.t('retos.error'));
   }
 }
 

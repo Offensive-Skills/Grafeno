@@ -31,7 +31,7 @@ window.addEventListener('DOMContentLoaded', () => {
       }
     } catch (error) {
       console.error('Error al obtener el writeup:', error);
-      writeupContent.innerHTML = `<p class="error">Error al cargar el writeup. Revisa la consola para más detalles.</p>`;
+      writeupContent.innerHTML = `<p class="error">${window.i18n.t('writeup.error')}</p>`;
     }
   }
 
@@ -40,7 +40,7 @@ window.addEventListener('DOMContentLoaded', () => {
     codeBlocks.forEach(pre => {
       const tooltip = document.createElement('span');
       tooltip.classList.add('copy-tooltip');
-      tooltip.textContent = 'Copiado';
+      tooltip.textContent = window.i18n.t('writeup.copied');
       pre.appendChild(tooltip);
 
       pre.addEventListener('click', () => {

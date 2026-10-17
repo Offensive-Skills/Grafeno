@@ -64,11 +64,11 @@ async function fetchChallenges() {
     } else if (currentChallenges.length > 0) {
       showChallengeDetail(currentChallenges[0]);
     } else {
-      document.getElementById('reto-detail').innerHTML = `<p style="text-align:center; margin-top:20px; color:#ccc;">No se encontraron retos con estos filtros</p>`;
+       document.getElementById('reto-detail').innerHTML = `<p style="text-align:center; margin-top:20px; color:#ccc;">${window.i18n.t('retos.empty')}</p>`;
     }
   } catch (error) {
     console.error(error);
-    alert('Error al obtener retos. Revisa la consola para más detalles.');
+    alert(window.i18n.t('retos.error'));
   }
 }
 

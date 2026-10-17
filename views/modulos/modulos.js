@@ -14,7 +14,7 @@ async function getModules({ token, courseID }) {
     const token = localStorage.getItem('apiToken') || 'TU_API_TOKEN';
     const currentCourse = JSON.parse(localStorage.getItem('currentCourse') || '{}');
     if (!currentCourse.id) {
-      document.getElementById('modulos-list').innerHTML = `<p class="error">No se ha seleccionado un curso.</p>`;
+      document.getElementById('modulos-list').innerHTML = `<p class="error">${window.i18n.t('cursos.noCourse')}</p>`;
       return;
     }
 
@@ -28,7 +28,7 @@ async function getModules({ token, courseID }) {
       renderModules(modules);
     } catch (error) {
       console.error(error);
-      document.getElementById('modulos-list').innerHTML = `<p class="error">Error al cargar módulos. Revisa la consola.</p>`;
+      document.getElementById('modulos-list').innerHTML = `<p class="error">${window.i18n.t('cursos.noModules')}</p>`;
     }
   });
   

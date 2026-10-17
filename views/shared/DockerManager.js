@@ -19,9 +19,9 @@ class DockerManager {
 
     const ipContainer = document.createElement('div');
     const label = document.createElement('strong');
-    label.textContent = useCompose ? 'IP del servicio principal: ' : 'IP del contenedor: ';
+    label.textContent = useCompose ? window.i18n.t('docker.ipCompose') : window.i18n.t('docker.ipContainer');
     const ipSpan = document.createElement('span');
-    ipSpan.textContent = 'Inactive';
+    ipSpan.textContent = window.i18n.t('docker.inactive');
     ipSpan.id = `container-ip-${challenge.id}`;
     ipContainer.append(label, ipSpan);
 
@@ -30,18 +30,18 @@ class DockerManager {
     loadingSpan.style.display = 'none';
     const spinner = document.createElement('span');
     spinner.classList.add('docker-spinner');
-    loadingSpan.append(spinner, document.createTextNode(' Iniciando contenedor...'));
+    loadingSpan.append(spinner, document.createTextNode(' ' + window.i18n.t('docker.starting')));
     loadingSpan.style.color = '#beefbe';
     ipContainer.appendChild(loadingSpan);
 
     const buttons = document.createElement('div');
     buttons.classList.add('docker-buttons');
     const startButton = document.createElement('button');
-    startButton.textContent = 'Iniciar';
+    startButton.textContent = window.i18n.t('docker.start');
     const stopButton = document.createElement('button');
-    stopButton.textContent = 'Detener';
+    stopButton.textContent = window.i18n.t('docker.stop');
     const restartButton = document.createElement('button');
-    restartButton.textContent = 'Reiniciar';
+    restartButton.textContent = window.i18n.t('docker.restart');
     buttons.append(startButton, stopButton, restartButton);
     section.append(ipContainer, buttons);
 
@@ -73,17 +73,17 @@ class DockerManager {
       const isStarting = mode === 0 || mode === 'start';
       setBusy(true);
       this.dockerState[key] = isStarting ? 'pulling' : 'deteniendo';
-      setLoading(isStarting ? 'Iniciando contenedor...' : 'Deteniendo contenedor...', isStarting ? '#beefbe' : '#ff4f4f');
+      setLoading(isStarting ? window.i18n.t('docker.starting') : window.i18n.t('docker.stopping'), isStarting ? '#beefbe' : '#ff4f4f');
 
       const progressHandler = isStarting
         ? window.electronAPI.onDockerProgress((data) => {
           if (data.operationId !== key) return;
           if (data.phase === 'downloading') {
-            setLoading(data.percent == null ? 'Descargando imágenes...' : `Descargando imagen... ${data.percent}%`);
+            setLoading(data.percent == null ? window.i18n.t('docker.downloading') : window.i18n.t('docker.downloadingPct', { percent: data.percent }));
           } else if (data.phase === 'preparing') {
-            setLoading('Preparando contenedor...');
+            setLoading(window.i18n.t('docker.preparing'));
           } else if (data.phase === 'authenticating') {
-            setLoading('Renovando sesión de Harbor...');
+            setLoading(window.i18n.t('docker.authenticating'));
           }
         })
         : null;
@@ -93,7 +93,7 @@ class DockerManager {
           if (isStarting) {
             const response = await api.getCompose({ token, challengeID: challenge.id });
             if (!response || response.error) {
-              throw new Error(response?.error || 'No se pudo obtener la configuración Compose.');
+              throw new Error(response?.error || window.i18n.t('docker.composeError'));
             }
             await window.electronAPI.cacheCompose(
               challenge.id,
@@ -108,7 +108,7 @@ class DockerManager {
         loadingSpan.style.display = 'none';
       } catch (error) {
         console.error('Error al gestionar el entorno Docker:', error);
-        setLoading(error.message || 'No se pudo completar la operación Docker.', '#ff4f4f');
+        setLoading(error.message || window.i18n.t('docker.errorOp'), '#ff4f4f');
       } finally {
         if (progressHandler) window.electronAPI.removeDockerProgressListener(progressHandler);
         this.dockerState[key] = 'idle';
@@ -131,10 +131,10 @@ class DockerManager {
       const ip = useCompose
         ? await window.electronAPI.checkCompose(challenge.id)
         : await window.electronAPI.checkContainer(challenge.name, challenge.version);
-      ipElement.textContent = ip === 'Inactive' ? 'Inactive' : ip;
+      ipElement.textContent = ip === 'Inactive' ? window.i18n.t('docker.inactive') : ip;
     } catch (error) {
       console.error('Error al consultar la IP del entorno:', error);
-      ipElement.textContent = 'Inactive';
+      ipElement.textContent = window.i18n.t('docker.inactive');
     }
   }
 }

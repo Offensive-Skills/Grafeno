@@ -14,16 +14,16 @@ class RetosDetail {
     // Descripción
     const descElem = document.createElement('div');
     descElem.classList.add('description');
-    descElem.textContent = challenge.description || 'Sin descripción';
+    descElem.textContent = challenge.description || window.i18n.t('detail.noDesc');
     
     // Fila para flag (input + botón)
     const flagRow = document.createElement('div');
     flagRow.classList.add('flag-row');
     const inputFlag = document.createElement('input');
     inputFlag.type = 'text';
-    inputFlag.placeholder = 'Introduce la flag';
+    inputFlag.placeholder = window.i18n.t('detail.flagPlaceholder');
     const btnEnviarFlag = document.createElement('button');
-    btnEnviarFlag.textContent = 'Enviar flag';
+    btnEnviarFlag.textContent = window.i18n.t('detail.sendFlag');
     flagRow.appendChild(inputFlag);
     flagRow.appendChild(btnEnviarFlag);
     
@@ -34,7 +34,7 @@ class RetosDetail {
     // Botón "Ver Writeup"
     const btnVerWriteup = document.createElement('button');
     btnVerWriteup.id = 'btn-ver-writeup';
-    btnVerWriteup.textContent = 'Ver Writeup';
+      btnVerWriteup.textContent = window.i18n.t('detail.seeWriteup');
     btnVerWriteup.addEventListener('click', () => onVerWriteup(challenge));
     
     // Botón para descargar archivos (si challenge.has_file)
@@ -42,7 +42,7 @@ class RetosDetail {
     if (challenge.has_file) {
       btnDescargarArchivo = document.createElement('button');
       btnDescargarArchivo.classList.add('btn-descargar-archivo');
-      btnDescargarArchivo.textContent = 'Descargar archivos del reto';
+      btnDescargarArchivo.textContent = window.i18n.t('detail.download');
       btnDescargarArchivo.addEventListener('click', async () => {
         let downloadStatus = document.getElementById('download-status');
         if (!downloadStatus) {
@@ -54,8 +54,8 @@ class RetosDetail {
         
         try {
           const response = await api.getFiles({ token: token, challengeID: challenge.id });
-          if (!response.ok) {
-            throw new Error(`Error HTTP: ${response.status}`);
+           if (!response.ok) {
+            throw new Error(window.i18n.t('detail.httpError', { status: response.status }));
           }
           
           const blob = await response.blob();
@@ -74,11 +74,11 @@ class RetosDetail {
           }
           
           const filePath = await window.electronAPI.saveChallenge(destFolder, challenge.name, arrayBuffer);
-          downloadStatus.textContent = `Archivo guardado en: ${filePath}`;
+          downloadStatus.textContent = window.i18n.t('detail.saved', { path: filePath });
           downloadStatus.style.color = '#beefbe';
         } catch (err) {
           console.error('Error al descargar archivos del reto:', err);
-          const msg = err.message || 'Error al descargar archivos del reto.';
+          const msg = err.message || window.i18n.t('detail.downloadError');
           downloadStatus.textContent = msg;
           downloadStatus.style.color = '#ff4f4f';
         }
@@ -110,7 +110,7 @@ class RetosDetail {
     btnEnviarFlag.addEventListener('click', async () => {
       const flagValue = inputFlag.value.trim();
       if (!flagValue) {
-        flagResult.textContent = 'Introduce una flag.';
+        flagResult.textContent = window.i18n.t('detail.enterFlag');
         flagResult.style.color = '#ff4f4f';
         return;
       }
@@ -119,17 +119,17 @@ class RetosDetail {
         const flag = flagValue
         const data = await api.submitChallenge({token, challengeID, flag})
         if (!data.error) {
-          flagResult.textContent = '¡Flag correcta!';
+          flagResult.textContent = window.i18n.t('detail.correct');
           flagResult.style.color = '#beefbe';
           challenge.completed = true;
           if (typeof onFlagComplete === 'function') onFlagComplete(challenge);
         } else {
-          flagResult.textContent = 'Flag incorrecta.';
+          flagResult.textContent = window.i18n.t('detail.wrong');
           flagResult.style.color = '#ff4f4f';
         }
       } catch (error) {
         console.error('Error al enviar flag:', error);
-        flagResult.textContent = 'Error al enviar la flag.';
+        flagResult.textContent = window.i18n.t('detail.sendError');
         flagResult.style.color = '#ff4f4f';
       }
     });

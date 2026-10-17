@@ -28,17 +28,17 @@ window.addEventListener('DOMContentLoaded', () => {
   });
   
   btnReset.addEventListener('click', async () => {
-    resetStatus.textContent = 'Eliminando contenido de la aplicación...';
+    resetStatus.textContent = window.i18n.t('config.resetting');
     resetStatus.style.color = '#ffffff';
 
     try {
       await window.electronAPI.resetData();
       console.log("Reset de datos completado");
-      resetStatus.textContent = "Reset de datos completado.";
+      resetStatus.textContent = window.i18n.t('config.resetDone');
       resetStatus.style.color = '#beefbe';
     } catch (error) {
       console.error(`Error al resetear datos: ${error}`);
-      resetStatus.textContent = 'Error al resetear datos.';
+      resetStatus.textContent = window.i18n.t('config.resetError');
       resetStatus.style.color = '#ff4f4f';
     }
   });

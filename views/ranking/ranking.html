@@ -2,7 +2,7 @@
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
-    <title>Ranking - Grafeno</title>
+    <title data-i18n="title.ranking">Ranking - Grafeno</title>
     <link rel="stylesheet" href="../../assets/css/ranking.css" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link
@@ -15,16 +15,16 @@
     <div class="ranking-overlay">
       <!-- Barra superior con botón de Atrás -->
       <div class="top-bar">
-        <button id="btn-atras" class="bar-button-atras">Atrás</button>
+        <button id="btn-atras" class="bar-button-atras" data-i18n="config.back">Atrás</button>
       </div>
       <div class="main-content">
-        <h1>Ranking</h1>
+        <h1 data-i18n="ranking.title">Ranking</h1>
         <table id="ranking-table">
           <thead>
             <tr>
-              <th>Posición</th>
-              <th>Usuario</th>
-              <th>Puntos</th>
+              <th data-i18n="ranking.position">Posición</th>
+              <th data-i18n="ranking.user">Usuario</th>
+              <th data-i18n="ranking.points">Puntos</th>
             </tr>
           </thead>
           <tbody id="top10-body">
@@ -39,6 +39,7 @@
     </div>
     <script src="../../controllers/apiEndpoints.js"></script>
     <script src="../background/background.js"></script>
+    <script src="../shared/i18n.js"></script>
     <script src="ranking.js"></script>
   </body>
 </html>

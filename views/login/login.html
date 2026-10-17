@@ -2,7 +2,7 @@
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
-    <title>Grafeno</title>
+    <title data-i18n="title.login">Grafeno</title>
     <link rel="stylesheet" href="../../assets/css/login.css" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link
@@ -18,45 +18,53 @@
       </div>
       <div class="login-container">
         <div class="login-left">
-          <h1 class="title">Iniciar Sesión</h1>
+          <h1 class="title" data-i18n="login.title">Iniciar Sesión</h1>
           <form id="loginForm">
-            <label for="username">Usuario</label>
+            <label for="username" data-i18n="login.username">Usuario</label>
             <input
               type="text"
               id="username"
               name="username"
               placeholder="Usuario"
+              data-i18n-placeholder="login.username"
               required
             />
-            <label for="apiToken">API-TOKEN</label>
+            <label for="apiToken" data-i18n="login.apiToken">API-TOKEN</label>
             <input
               type="password"
               id="apiToken"
               name="apiToken"
               placeholder="API-TOKEN"
+              data-i18n-placeholder="login.apiToken"
               required
             />
             <!-- Checkbox para recordar credenciales -->
             <div class="remember-container">
               <input type="checkbox" id="rememberCreds" />
-              <label for="rememberCreds">Recordar credenciales</label>
+              <label for="rememberCreds" data-i18n="login.remember">Recordar credenciales</label>
             </div>
-            <button type="submit" class="btn-login">Login</button>
+            <button type="submit" class="btn-login" data-i18n="login.btn">Login</button>
           </form>
           <div id="error-message" class="error-message"></div>
         </div>
         <div class="login-right">
+          <label class="lang-pill">
+            <input type="checkbox" class="lang-switch" />
+            <span class="lang-thumb"></span>
+            <span class="lang-label" data-lang="es"><span class="lang-flag">🇪🇸</span> ES</span>
+            <span class="lang-label" data-lang="en"><span class="lang-flag">🇬🇧</span> EN</span>
+          </label>
           <p>
-            ¿Aún no tienes credenciales para usar esta herramienta?
+            <span data-i18n="login.noCreds">¿Aún no tienes credenciales para usar esta herramienta?</span>
             <br />
             <a
-              href="https://offs.es/login"
+              href="https://offs.es"
               target="_blank"
               class="link-credentials"
-              >Accede a offs.es</a
+              data-i18n="login.accessOffs">Accede a offs.es</a
             >
           </p>
-          <p style="margin-top: 20px;">O escanea este QR para acceder:</p>
+          <p style="margin-top: 20px;" data-i18n="login.scanQr">O escanea este QR para acceder:</p>
           <div class="qr-container">
             <!-- El QR se generará aquí dinámicamente -->
           </div>
@@ -66,6 +74,7 @@
     <script src="../../node_modules/qr-code-styling/lib/qr-code-styling.js"></script>
     <script src="../../controllers/apiEndpoints.js"></script>
     <script src="../background/background.js"></script>
+    <script src="../shared/i18n.js"></script>
     <script src="login.js"></script>
   </body>
 </html>

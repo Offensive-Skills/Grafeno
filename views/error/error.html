@@ -2,7 +2,7 @@
 <html lang="es">
   <head>
     <meta charset="UTF-8">
-    <title>Grafeno - Docker no encontrado</title>
+    <title data-i18n="title.error">Grafeno - Docker no encontrado</title>
     <link rel="stylesheet" href="../../assets/css/error.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Courier+Prime&display=swap" rel="stylesheet">
@@ -12,28 +12,28 @@
 
     <div class="error-overlay">
       <div class="error-container">
-        <h1 id="errorTitle">Docker no está instalado</h1>
-        <p id="errorDescription">Grafeno necesita Docker para funcionar. Puedes instalarlo directamente desde aquí.</p>
+        <h1 id="errorTitle" data-i18n="error.pageTitle">Docker no está instalado</h1>
+        <p id="errorDescription" data-i18n="error.dockerMissing.desc">Grafeno necesita Docker para funcionar. Puedes instalarlo directamente desde aquí.</p>
 
         <div class="info-box">
-          <p><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          <p data-i18n-html="error.infoBoxDoc"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
             La instalación automática solo está disponible para <strong>Ubuntu</strong>, <strong>Debian</strong> y <strong>Kali Linux</strong>.</p>
-          <p>Para otros sistemas operativos, consulta la
+          <p data-i18n-html="error.infoBoxOfficial">Para otros sistemas operativos, consulta la
             <a href="https://docs.docker.com/engine/install/">documentación oficial de Docker</a>.</p>
-          <p class="info-small"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/></svg>
+          <p class="info-small" data-i18n-html="error.infoBoxScript"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/></svg>
             El script de instalación es público y sigue las instrucciones oficiales:
             <a href="https://github.com/Offensive-Skills/Grafeno/blob/main/setup_docker.sh">ver en GitHub</a></p>
-          <p class="info-small"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          <p class="info-small" data-i18n-html="error.infoBoxPassword"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
             La contraseña solo se utiliza para instalar los paquetes oficiales de Docker.</p>
         </div>
 
         <div id="installSection">
           <div class="input-group">
-            <label for="sudoPassword">Contraseña de administrador (sudo):</label>
-            <input type="password" id="sudoPassword" placeholder="Contraseña sudo">
+            <label for="sudoPassword" data-i18n="error.sudoLabel">Contraseña de administrador (sudo):</label>
+            <input type="password" id="sudoPassword" placeholder="Contraseña sudo" data-i18n-placeholder="error.sudoPlaceholder">
           </div>
-          <button id="installButton">Instalar Docker</button>
-          <button id="cancelInstallButton" style="display: none;">Cancelar</button>
+          <button id="installButton" data-i18n="error.installBtn">Instalar Docker</button>
+          <button id="cancelInstallButton" style="display: none;" data-i18n="error.cancelBtn">Cancelar</button>
         </div>
 
         <div id="logSection" style="display: none;">
@@ -50,23 +50,24 @@
               <line x1="15" y1="12" x2="3" y2="12"/>
             </svg>
           </div>
-          <h2 class="action-title">Cierra sesión y vuelve a iniciarla</h2>
-          <p class="action-text">Docker se ha instalado correctamente. Para que Grafeno pueda usarlo, el cambio de grupo <strong>docker</strong> necesita una nueva sesión de trabajo.</p>
+          <h2 class="action-title" data-i18n="error.actionTitleRelogin">Cierra sesión y vuelve a iniciarla</h2>
+          <p class="action-text" data-i18n-html="error.actionTextRelogin">Docker se ha instalado correctamente. Para que Grafeno pueda usarlo, el cambio de grupo <strong>docker</strong> necesita una nueva sesión de trabajo.</p>
           <ol class="action-steps">
-            <li><span class="step-num">1</span><span>Cierra la sesión actual</span></li>
-            <li><span class="step-num">2</span><span>Vuelve a iniciar sesión</span></li>
-            <li><span class="step-num">3</span><span>Abre Grafeno</span></li>
+            <li><span class="step-num">1</span><span data-i18n="error.step1">Cierra la sesión actual</span></li>
+            <li><span class="step-num">2</span><span data-i18n="error.step2">Vuelve a iniciar sesión</span></li>
+            <li><span class="step-num">3</span><span data-i18n="error.step3">Abre Grafeno</span></li>
           </ol>
-          <button id="closeGrafenoButton">Cerrar Grafeno</button>
+          <button id="closeGrafenoButton" data-i18n="error.closeGrafeno">Cerrar Grafeno</button>
         </div>
 
         <div class="button-row" id="buttonRow">
-          <button id="closeButton">Cerrar</button>
+          <button id="closeButton" data-i18n="error.close">Cerrar</button>
         </div>
       </div>
     </div>
 
     <script src="../background/background.js"></script>
+    <script src="../shared/i18n.js"></script>
     <script src="error.js"></script>
   </body>
 </html>

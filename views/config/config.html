@@ -2,7 +2,7 @@
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
-    <title>Configuración - Grafeno</title>
+    <title data-i18n="title.config">Configuración - Grafeno</title>
     <link rel="stylesheet" href="../../assets/css/config.css" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link
@@ -16,27 +16,33 @@
     
     <div class="config-overlay">
       <div class="top-bar">
-        <button id="btn-atras" class="bar-button-atras">Atrás</button>
-        <h1 class="navbar-title">Configuración</h1>
+        <button id="btn-atras" class="bar-button-atras" data-i18n="config.back">Atrás</button>
+        <h1 class="navbar-title" data-i18n="config.title">Configuración</h1>
+        <label class="lang-pill">
+          <input type="checkbox" class="lang-switch" />
+          <span class="lang-thumb"></span>
+          <span class="lang-label" data-lang="es"><span class="lang-flag">🇪🇸</span> ES</span>
+          <span class="lang-label" data-lang="en"><span class="lang-flag">🇬🇧</span> EN</span>
+        </label>
       </div>
       <div class="config-content">
         <!-- Sección: Descargas de ficheros -->
         <section class="config-section">
-          <h1>Descargas de ficheros</h1>
-          <p class="section-info">
+          <h1 data-i18n="config.downloads">Descargas de ficheros</h1>
+          <p class="section-info" data-i18n="config.downloadsInfo">
             Especifica la ubicación en la que deseas que se guarden los archivos descargados de los retos.
             Si no se especifica, se guardarán en la carpeta de descargas por defecto.
           </p>
-          <input type="text" id="destinationInput" placeholder="Ruta de destino (por defecto: Descargas)" />
+          <input type="text" id="destinationInput" placeholder="Ruta de destino (por defecto: Descargas)" data-i18n-placeholder="config.destPlaceholder" />
         </section>
         <!-- Sección: Reseteo de información -->
         <section class="config-section">
-          <h1>Reseteo de información</h1>
-          <p class="section-info">
+          <h1 data-i18n="config.reset">Reseteo de información</h1>
+          <p class="section-info" data-i18n="config.resetInfo">
             Pulsa el botón para resetear todos los datos de la aplicación. El proceso se mostrará a la derecha.
           </p>
           <div class="reset-container">
-            <button id="btn-reset" class="reset-button">Resetear datos</button>
+            <button id="btn-reset" class="reset-button" data-i18n="config.btnReset">Resetear datos</button>
             <span id="reset-status" class="reset-status"></span>
           </div>
         </section>
@@ -44,6 +50,7 @@
     </div>
     
     <script src="../background/background.js"></script>
+    <script src="../shared/i18n.js"></script>
     <script src="config.js"></script>
   </body>
 </html>

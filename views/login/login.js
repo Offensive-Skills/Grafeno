@@ -64,15 +64,15 @@ window.addEventListener('DOMContentLoaded', () => {
       const success = await window.electronAPI.dockerLogin(username, apiToken);
       loadingOverlay.style.display = 'none';
 
-      if (success) {
+       if (success) {
         localStorage.setItem('apiToken', apiToken);
         window.electronAPI.loginSuccess();
       } else {
-        errorMessage.textContent = 'Usuario o API-TOKEN incorrectos';
+        errorMessage.textContent = window.i18n.t('login.errorCreds');
       }
     } catch (error) {
       loadingOverlay.style.display = 'none';
-      errorMessage.textContent = 'Error al conectar con Docker';
+      errorMessage.textContent = window.i18n.t('login.errorConnect');
       console.error('Error en login:', error);
     }
   });
