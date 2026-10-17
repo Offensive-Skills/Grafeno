@@ -4,10 +4,10 @@ window.addEventListener('DOMContentLoaded', () => {
   // Generar el código QR en el contenedor
   const qrContainer = document.querySelector(".qr-container");
   const qrCode = new QRCodeStyling({
-    width: 300,
-    height: 300,
+    width: 150,
+    height: 150,
     type: "svg",
-    data: "https://offs.es/",
+    data: "https://offs.es/login",
     qrOptions: { margin: 0 },
     dotsOptions: { color: "#beefbe", type: "rounded" },
     backgroundOptions: { color: "#2b2b2b" },
