@@ -16,3 +16,6 @@ AGENTS.md
 
 # Plan files
 plan_*
+
+# Playwright MCP
+.playwright-mcp
