@@ -44,7 +44,7 @@ npm version minor   # nueva funcionalidad
 npm version major   # cambio mayor
 ```
 
-> `npm version` actualiza `package.json`, hace commit y crea el tag automáticamente. Si lo haces así, **salta al paso 4**.
+> `npm version` actualiza `package.json` y `package-lock.json`, hace commit y crea el tag automáticamente. Si lo haces así, **salta directamente al paso 5**.
 
 
 ### 3. Commit con la nueva versión
@@ -54,13 +54,13 @@ Si has editado `package.json` manualmente:
 ```bash
 npm install --package-lock-only
 git add package.json package-lock.json
-git commit -m "chore: bump version to 1.0.X"
+git commit -m "chore: bump version to X.Y.Z"
 ```
 
 ### 4. Crear el tag de versión
 
 ```bash
-git tag v1.0.X
+git tag vX.Y.Z
 ```
 
 ### 5. Hacer push del commit y del tag
@@ -81,11 +81,11 @@ Al hacer push del tag, el workflow de GitHub Actions se lanza automáticamente.
 3. Se crean **3 jobs en paralelo**:
    - `linux (x64)` — Ubuntu latest
    - `linux (arm64)` — Ubuntu latest (cross-compile)
-   - `mac` — macOS 14 (Apple Silicon)
-4. Al finalizar, `electron-builder` emplea el token de GitHub para generar y publicar la Release automáticamente. No es necesaria ninguna intervención manual en la interfaz de GitHub. Los instaladores quedan publicados bajo la ruta `/releases/tag/v1.0.X`
+   - `mac` — macOS 15 (Apple Silicon)
+4. Al finalizar, `electron-builder` emplea el token de GitHub para generar y publicar la Release automáticamente. No es necesaria ninguna intervención manual en la interfaz de GitHub. Los instaladores quedan publicados bajo la ruta `/releases/tag/vX.Y.Z`
 
 > ![Note] Draft Release
-> No se sube directamente la release como pública, pero si pinchas dentro de las Releases de Grafeno, se puede ver que se ha creado la etiqueta como _Draft_ (Borrador), y que tiene los artefactos de MAC y Linux (x64 y amd) correctos para publicar la release. Solo hay que darle a "Editar", añadir notas si es que lo deseamos, y publicar.
+> No se sube directamente la release como pública, pero si pinchas dentro de las Releases de Grafeno, se puede ver que se ha creado la etiqueta como _Draft_ (Borrador), y que tiene los artefactos de MAC y Linux (x64 y arm64) correctos para publicar la release. Solo hay que darle a "Editar", añadir notas si es que lo deseamos, y publicar.
 
 ---
 
