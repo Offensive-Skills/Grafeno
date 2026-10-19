@@ -501,6 +501,7 @@ ipcMain.handle('clipboard:write', async (_event, text) => {
 });
 
 // Docker: instalar Docker en el sistema
+const INSTALL_TIMEOUT_MS = 60 * 60 * 1000;
 let activeInstallChild = null;
 let activeInstallTimer = null;
 
@@ -570,7 +571,7 @@ ipcMain.handle('docker:install', async (_event, password) => {
 
     activeInstallTimer = setTimeout(() => {
       terminateInstallProcess('SIGTERM');
-    }, 10 * 60 * 1000);
+    }, INSTALL_TIMEOUT_MS);
 
     child.stdin.write(password + '\n');
     child.stdin.end();
