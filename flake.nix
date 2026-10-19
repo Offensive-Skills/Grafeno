@@ -35,6 +35,7 @@
             echo "   electron: $(electron --version 2>/dev/null || echo 'usa ELECTRON_OVERRIDE_DIST_PATH')"
           '';
         };
+        devShells.vm = import ./vm.nix { inherit pkgs; };
       }
     );
 }

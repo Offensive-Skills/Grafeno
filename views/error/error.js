@@ -43,25 +43,44 @@ window.addEventListener('DOMContentLoaded', () => {
 
   let startupError = null;
   let installRunning = false;
+  let currentState = null;
+  let restartRelogin = null;
+  let retryMode = false;
+  let currentButtonKey = null;
+  let currentStatusKind = null;
+  let currentStatusKey = null;
+  let currentStatusVars = null;
 
-  function showError(message) {
-    statusMsg.textContent = ' ' + message;
-    statusMsg.insertAdjacentHTML('afterbegin', crossIcon);
-    statusMsg.className = 'error-msg';
+  function showStatus(kind, key, vars) {
+    currentStatusKind = kind;
+    currentStatusKey = key;
+    currentStatusVars = vars;
+    statusMsg.textContent = ' ' + window.i18n.t(key, vars);
+    statusMsg.insertAdjacentHTML('afterbegin', kind === 'error' ? crossIcon : '<span class="status-spinner" aria-hidden="true"></span>');
+    statusMsg.className = kind === 'error' ? 'error-msg' : 'status-loading';
     statusMsg.style.display = 'block';
   }
 
-  function showLoading(message) {
-    statusMsg.textContent = ' ' + message;
-    statusMsg.insertAdjacentHTML('afterbegin', '<span class="status-spinner" aria-hidden="true"></span>');
-    statusMsg.className = 'status-loading';
-    statusMsg.style.display = 'block';
+  function showError(key, vars) {
+    showStatus('error', key, vars);
+  }
+
+  function showLoading(key, vars) {
+    showStatus('loading', key, vars);
   }
 
   function hideStatus() {
+    currentStatusKind = null;
+    currentStatusKey = null;
+    currentStatusVars = null;
     statusMsg.textContent = '';
     statusMsg.className = '';
     statusMsg.style.display = 'none';
+  }
+
+  function setInstallButton(key) {
+    currentButtonKey = key;
+    installButton.textContent = window.i18n.t(key);
   }
 
   function isPasswordError(output) {
@@ -70,16 +89,24 @@ window.addEventListener('DOMContentLoaded', () => {
 
   function applyState(state) {
     const config = STATES[state] || STATES.DOCKER_MISSING;
+    currentState = state;
+    restartRelogin = null;
+    retryMode = false;
     errorTitle.textContent = window.i18n.t(config.titleKey);
+    errorTitle.setAttribute('data-i18n', config.titleKey);
     errorDescription.textContent = window.i18n.t(config.descKey);
-    installButton.textContent = window.i18n.t(config.buttonKey);
+    errorDescription.setAttribute('data-i18n', config.descKey);
+    if (!installRunning) {
+      setInstallButton(config.buttonKey);
+      installButton.setAttribute('data-i18n', config.buttonKey);
+    }
 
     if (state === 'COMPOSE_MISSING') {
-      infoBox.innerHTML = `<p>${window.i18n.t('error.composeInfoBox')}</p>`;
+      infoBox.innerHTML = `<p data-i18n-html="error.composeInfoBox">${window.i18n.t('error.composeInfoBox')}</p>`;
     } else if (state === 'DOCKER_PERM_MISSING') {
-      infoBox.innerHTML = `<p>${window.i18n.t('error.permInfoBox')}</p>`;
+      infoBox.innerHTML = `<p data-i18n-html="error.permInfoBox">${window.i18n.t('error.permInfoBox')}</p>`;
     } else if (state === 'DOCKER_DAEMON_STOPPED') {
-      infoBox.innerHTML = `<p>${window.i18n.t('error.daemonInfoBox')}</p>`;
+      infoBox.innerHTML = `<p data-i18n-html="error.daemonInfoBox">${window.i18n.t('error.daemonInfoBox')}</p>`;
     }
 
     // El estado de servicio parado usa otro flujo (systemctl), el resto el script de instalación
@@ -87,41 +114,65 @@ window.addEventListener('DOMContentLoaded', () => {
   }
 
   function showRestartRequired(reloginNeeded) {
+    restartRelogin = reloginNeeded;
+    retryMode = false;
     installSection.style.display = 'none';
     logSection.style.display = 'none';
     buttonRow.style.display = 'none';
     hideStatus();
-    if (reloginNeeded) {
-      document.querySelector('.action-title').textContent = window.i18n.t('error.actionTitleRelogin');
-      document.querySelector('.action-text').innerHTML = window.i18n.t('error.actionTextRelogin');
-    } else {
-      document.querySelector('.action-title').textContent = window.i18n.t('error.actionTitleRestart');
-      document.querySelector('.action-text').textContent = window.i18n.t('error.actionTextRestart');
-    }
+    const titleKey = reloginNeeded ? 'error.actionTitleRelogin' : 'error.actionTitleRestart';
+    const textKey = reloginNeeded ? 'error.actionTextRelogin' : 'error.actionTextRestart';
+    const titleEl = document.querySelector('.action-title');
+    const textEl = document.querySelector('.action-text');
+    titleEl.textContent = window.i18n.t(titleKey);
+    titleEl.setAttribute('data-i18n', titleKey);
+    textEl.innerHTML = window.i18n.t(textKey);
+    textEl.setAttribute('data-i18n-html', textKey);
     const steps = document.querySelector('.action-steps');
     if (reloginNeeded) {
-      steps.innerHTML = `<li><span class="step-num">1</span><span>${window.i18n.t('error.step1')}</span></li>`
-        + `<li><span class="step-num">2</span><span>${window.i18n.t('error.step2')}</span></li>`
-        + `<li><span class="step-num">3</span><span>${window.i18n.t('error.step3')}</span></li>`;
+      steps.style.display = '';
+      steps.innerHTML = `<li><span class="step-num">1</span><span data-i18n="error.step1">${window.i18n.t('error.step1')}</span></li>`
+        + `<li><span class="step-num">2</span><span data-i18n="error.step2">${window.i18n.t('error.step2')}</span></li>`
+        + `<li><span class="step-num">3</span><span data-i18n="error.step3">${window.i18n.t('error.step3')}</span></li>`;
       closeGrafenoButton.textContent = window.i18n.t('error.closeGrafeno');
+      closeGrafenoButton.setAttribute('data-i18n', 'error.closeGrafeno');
     } else {
       steps.style.display = 'none';
       closeGrafenoButton.textContent = window.i18n.t('error.restartGrafeno');
+      closeGrafenoButton.setAttribute('data-i18n', 'error.restartGrafeno');
     }
+    closeGrafenoButton.dataset.action = reloginNeeded ? 'close' : 'restart';
     actionRequired.style.display = 'block';
   }
 
-  function resetAfterFailure(message) {
+  function resetAfterFailure(key, vars) {
     hideStatus();
-    showError(message);
+    showError(key, vars);
     installButton.disabled = false;
-    installButton.textContent = window.i18n.t('error.retry');
+    setInstallButton('error.retry');
     passwordInput.disabled = false;
     passwordInput.value = '';
     passwordInput.focus();
     cancelInstallButton.style.display = 'none';
     installRunning = false;
+    retryMode = true;
   }
+
+  document.addEventListener('langchange', () => {
+    if (restartRelogin !== null) {
+      showRestartRequired(restartRelogin);
+      return;
+    }
+    if (currentState) {
+      applyState(currentState);
+      if (installRunning) {
+        if (currentButtonKey) setInstallButton(currentButtonKey);
+        if (currentStatusKey) showStatus(currentStatusKind, currentStatusKey, currentStatusVars);
+      } else if (retryMode) {
+        setInstallButton('error.retry');
+      }
+    }
+  });
 
   window.electronAPI.getDockerStartupError().then((error) => {
     startupError = error;
@@ -133,7 +184,7 @@ window.addEventListener('DOMContentLoaded', () => {
   });
 
   closeGrafenoButton.addEventListener('click', () => {
-    if (closeGrafenoButton.textContent === 'Reiniciar Grafeno') {
+    if (closeGrafenoButton.dataset.action === 'restart') {
       window.electronAPI.restartApp();
     } else {
       window.electronAPI.closeApp();
@@ -147,7 +198,7 @@ window.addEventListener('DOMContentLoaded', () => {
   cancelInstallButton.addEventListener('click', async () => {
     if (!installRunning) return;
     cancelInstallButton.disabled = true;
-    showLoading(window.i18n.t('error.canceling'));
+    showLoading('error.canceling');
     await window.electronAPI.cancelDockerInstall();
   });
 
@@ -168,13 +219,9 @@ window.addEventListener('DOMContentLoaded', () => {
     cancelInstallButton.disabled = false;
 
     const flow = installButton.dataset.flow;
-    if (flow === 'start-service') {
-      installButton.textContent = window.i18n.t('error.startingService');
-      showLoading(window.i18n.t('error.startingService'));
-    } else {
-      installButton.textContent = window.i18n.t('error.installing');
-      showLoading(window.i18n.t('error.installing'));
-    }
+    const flowKey = flow === 'start-service' ? 'error.startingService' : 'error.installing';
+    setInstallButton(flowKey);
+    showLoading(flowKey);
 
     const outputHandler = window.electronAPI.onDockerInstallOutput((text) => {
       installLog.textContent += text;
@@ -196,16 +243,16 @@ window.addEventListener('DOMContentLoaded', () => {
         }
         installRunning = false;
       } else if (result.cancelled) {
-        resetAfterFailure(window.i18n.t('error.cancelMsg'));
+        resetAfterFailure('error.cancelMsg');
       } else if (isPasswordError(result.output)) {
-        resetAfterFailure(window.i18n.t('error.wrongPassword'));
+        resetAfterFailure('error.wrongPassword');
       } else {
-        resetAfterFailure(window.i18n.t('error.installFail'));
+        resetAfterFailure('error.installFail');
       }
     } catch (err) {
       window.electronAPI.removeDockerInstallOutputListener(outputHandler);
       cancelInstallButton.style.display = 'none';
-      resetAfterFailure(window.i18n.t('error.unexpected', { msg: err.message }));
+      resetAfterFailure('error.unexpected', { msg: err.message });
     }
   });
 });
