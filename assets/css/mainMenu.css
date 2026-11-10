@@ -146,3 +146,15 @@ canvas#bgCanvas {
   background-color: #2b2b2b;
   color: #beefbe;
 }
+
+/* Versión de la aplicación (discreta, esquina inferior izquierda) */
+.app-version {
+  position: absolute;
+  bottom: 12px;
+  left: 16px;
+  z-index: 5;
+  font-size: 12px;
+  color: rgba(190, 239, 190, 0.5);
+  pointer-events: none;
+  user-select: none;
+}

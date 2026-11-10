@@ -494,6 +494,8 @@ ipcMain.handle('app:get-downloads-dir', async () => {
   return app.getPath('downloads');
 });
 
+ipcMain.handle('app:get-version', () => app.getVersion());
+
 // Clipboard
 ipcMain.handle('clipboard:write', async (_event, text) => {
   clipboard.writeText(text);

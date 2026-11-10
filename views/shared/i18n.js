@@ -91,6 +91,8 @@
       'config.resetDone': 'Reset de datos completado.',
       'config.resetError': 'Error al resetear datos.',
       'config.back': 'Atrás',
+      'config.about': 'Acerca de',
+      'config.versionLabel': 'Versión',
 
       // --- Docker Manager ---
       'docker.ipContainer': 'IP del contenedor: ',
@@ -274,6 +276,8 @@
       'config.resetDone': 'Data reset complete.',
       'config.resetError': 'Error resetting data.',
       'config.back': 'Back',
+      'config.about': 'About',
+      'config.versionLabel': 'Version',
 
       // --- Docker Manager ---
       'docker.ipContainer': 'Container IP: ',

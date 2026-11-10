@@ -47,5 +47,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.removeListener('docker:install-output', handler),
 
   // App
+  getAppVersion: () => ipcRenderer.invoke('app:get-version'),
   restartApp: () => ipcRenderer.send('restart-app'),
 });
