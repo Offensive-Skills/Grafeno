@@ -18,10 +18,10 @@ Download the `.deb` package from the [GitHub releases page](https://github.com/O
 
 ### Prerequisites
 
-- **Docker:** Grafeno requires Docker to be installed and running on your system. We recommend updating your system before proceeding:
+- **Docker:** Grafeno requires Docker Engine 28.0.0 or higher and the Docker Compose plugin 2.33.1 or higher (`docker compose`, not the legacy `docker-compose`). We recommend updating your system before proceeding:
 
   > ***Note:***
-  > If you don't have Docker installed, run:
+  > If you don't have Docker installed (or your version is below the minimum), run:
   > ```bash
   > curl -fsSL 'https://raw.githubusercontent.com/Offensive-Skills/Grafeno/main/setup_docker.sh' | sudo bash -s
   > ```

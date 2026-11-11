@@ -18,10 +18,10 @@ Descarga el paquete `.deb` desde la [página de releases de GitHub](https://gith
 
 ### Requisitos previos
 
-- **Docker:** Grafeno requiere que Docker esté instalado y funcionando en tu sistema. Se recomienda actualizar tu sistema antes de proceder:
+- **Docker:** Grafeno requiere Docker Engine 28.0.0 o superior y el plugin Docker Compose 2.33.1 o superior (`docker compose`, no el antiguo `docker-compose`). Se recomienda actualizar tu sistema antes de proceder:
 
   > ***Nota:***
-  > Si no tienes Docker instalado, ejecuta:
+  > Si no tienes Docker instalado (o tu versión es anterior a la mínima), ejecuta:
   > ```bash
   > curl -fsSL 'https://raw.githubusercontent.com/Offensive-Skills/Grafeno/main/setup_docker.sh' | sudo bash -s
   > ```

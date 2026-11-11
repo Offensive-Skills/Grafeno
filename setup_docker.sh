@@ -3,13 +3,16 @@
 
 # Descripción:
 # - Instala Docker en el equipo (Ubuntu, Debian y Kali Linux).
-# - Instala o actualiza docker-compose-plugin a la versión mínima requerida por Grafeno.
+# - Instala o actualiza Docker Engine y docker-compose-plugin a las versiones mínimas requeridas por Grafeno.
+# - Elimina paquetes incompatibles de la distribución (docker-compose, docker-compose-v2, docker-buildx, podman-docker) que chocan con los oficiales.
 # - Añade al usuario actual al grupo 'docker'.
 # - Detecta la distribución mediante /etc/os-release (sin depender de lsb_release).
 # - Puede ejecutarse de forma segura con: bash setup_docker.sh  (sin pipe de red)
 
 set -euo pipefail  # Detiene el script ante cualquier error y falla si un pipe falla
 
+# gw_priority necesita Docker Engine 28.0.0+ y Compose 2.33.1+.
+MIN_ENGINE_VERSION="28.0.0"
 MIN_COMPOSE_VERSION="2.33.1"
 
 # Funciones para formatear la salida
@@ -118,6 +121,51 @@ function compose_plugin_ok() {
     [ -n "$version" ] && version_ge "$version" "$MIN_COMPOSE_VERSION"
 }
 
+function docker_cli_version() {
+    docker --version 2>/dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -n1
+}
+
+function docker_cli_ok() {
+    local version
+    version=$(docker_cli_version) || return 1
+    [ -n "$version" ] && version_ge "$version" "$MIN_ENGINE_VERSION"
+}
+
+function docker_engine_ok() {
+    local version
+    version=$(docker version --format '{{.Server.Version}}' 2>/dev/null) || return 1
+    [ -n "$version" ] && version_ge "$version" "$MIN_ENGINE_VERSION"
+}
+
+function docker_needs_update() {
+    if ! docker_cli_ok || ! compose_plugin_ok; then
+        return 0
+    fi
+    if docker info >/dev/null 2>&1 && ! docker_engine_ok; then
+        return 0
+    fi
+    return 1
+}
+
+function remove_conflicting_packages() {
+    local pkg
+    for pkg in docker-compose-v2 docker-compose docker-buildx docker-doc podman-docker; do
+        if dpkg -s "$pkg" >/dev/null 2>&1; then
+            echo_info "Eliminando paquete incompatible: $pkg"
+            apt-get remove -y "$pkg"
+        fi
+    done
+    if ! dpkg -s docker-compose >/dev/null 2>&1 && command_exists docker-compose; then
+        echo_info "Aviso: existe un docker-compose fuera de apt. El plugin oficial se instalará igualmente y Grafeno usará 'docker compose'."
+    fi
+    if dpkg -s docker.io >/dev/null 2>&1; then
+        echo_info "El paquete docker.io se sustituirá por el paquete oficial docker-ce."
+    fi
+    if command_exists snap && snap list docker >/dev/null 2>&1; then
+        echo_info "Aviso: Docker está instalado como snap y puede tener prioridad sobre el paquete oficial. Desinstálalo con 'sudo snap remove docker' si Grafeno sigue detectando una versión antigua."
+    fi
+}
+
 # Mostrar banner inicial
 print_banner
 
@@ -144,27 +192,32 @@ print_separator
 detect_os
 print_separator
 
-# Paso 1: Configurar el repositorio de Docker cuando el plugin Compose no cumple el mínimo.
+# Paso 1: Configurar el repositorio de Docker cuando Docker Engine o el plugin Compose no cumplen el mínimo.
 # Una vez configurado, apt instala tanto Docker Engine como el plugin desde el mismo repo.
-if ! compose_plugin_ok; then
+if docker_needs_update; then
     if command_exists docker; then
-        echo_info "Docker ya está instalado, pero el plugin docker-compose v${MIN_COMPOSE_VERSION}+ no cumple el mínimo requerido por Grafeno. Se actualizará."
+        echo_info "Docker está instalado, pero no cumple los mínimos (Docker ${MIN_ENGINE_VERSION}+ y plugin Compose ${MIN_COMPOSE_VERSION}+). Se actualizará."
     else
         echo_info "Docker no está instalado. Se instalará Docker Engine junto con el plugin Compose."
     fi
     configure_docker_repo
+    remove_conflicting_packages
 
     echo_info "Instalando Docker Engine y componentes..."
     apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
-    if command_exists docker && compose_plugin_ok; then
-        echo_success "Docker instalado/actualizado correctamente junto al plugin Compose."
+    if docker_cli_ok && compose_plugin_ok; then
+        if docker info >/dev/null 2>&1 && ! docker_engine_ok; then
+            echo_error "Docker Engine sigue por debajo de la versión mínima ${MIN_ENGINE_VERSION}."
+            exit 1
+        fi
+        echo_success "Docker y el plugin Compose se han instalado/actualizado correctamente (Docker ${MIN_ENGINE_VERSION}+, Compose ${MIN_COMPOSE_VERSION}+)."
     else
         echo_error "Fallo al instalar Docker o el plugin Compose."
         exit 1
     fi
 else
-    echo_success "Docker ya está instalado y el plugin Compose cumple la v${MIN_COMPOSE_VERSION}."
+    echo_success "Docker y el plugin Compose ya cumplen los mínimos (Docker ${MIN_ENGINE_VERSION}+, Compose ${MIN_COMPOSE_VERSION}+)."
 fi
 print_separator
 

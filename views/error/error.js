@@ -29,6 +29,21 @@ window.addEventListener('DOMContentLoaded', () => {
       descKey: 'error.composeMissing.desc',
       buttonKey: 'error.composeMissing.btn'
     },
+    COMPOSE_STANDALONE: {
+      titleKey: 'error.composeStandalone.title',
+      descKey: 'error.composeStandalone.desc',
+      buttonKey: 'error.composeMissing.btn'
+    },
+    COMPOSE_OUTDATED: {
+      titleKey: 'error.composeOutdated.title',
+      descKey: 'error.composeOutdated.desc',
+      buttonKey: 'error.composeMissing.btn'
+    },
+    DOCKER_OUTDATED: {
+      titleKey: 'error.dockerOutdated.title',
+      descKey: 'error.dockerOutdated.desc',
+      buttonKey: 'error.dockerOutdated.btn'
+    },
     DOCKER_PERM_MISSING: {
       titleKey: 'error.permMissing.title',
       descKey: 'error.permMissing.desc',
@@ -94,15 +109,17 @@ window.addEventListener('DOMContentLoaded', () => {
     retryMode = false;
     errorTitle.textContent = window.i18n.t(config.titleKey);
     errorTitle.setAttribute('data-i18n', config.titleKey);
-    errorDescription.textContent = window.i18n.t(config.descKey);
+    errorDescription.textContent = window.i18n.t(config.descKey, startupError?.vars);
     errorDescription.setAttribute('data-i18n', config.descKey);
     if (!installRunning) {
       setInstallButton(config.buttonKey);
       installButton.setAttribute('data-i18n', config.buttonKey);
     }
 
-    if (state === 'COMPOSE_MISSING') {
+    if (state === 'COMPOSE_MISSING' || state === 'COMPOSE_STANDALONE' || state === 'COMPOSE_OUTDATED') {
       infoBox.innerHTML = `<p data-i18n-html="error.composeInfoBox">${window.i18n.t('error.composeInfoBox')}</p>`;
+    } else if (state === 'DOCKER_OUTDATED') {
+      infoBox.innerHTML = `<p data-i18n-html="error.dockerOutdatedInfoBox">${window.i18n.t('error.dockerOutdatedInfoBox')}</p>`;
     } else if (state === 'DOCKER_PERM_MISSING') {
       infoBox.innerHTML = `<p data-i18n-html="error.permInfoBox">${window.i18n.t('error.permInfoBox')}</p>`;
     } else if (state === 'DOCKER_DAEMON_STOPPED') {
@@ -236,11 +253,8 @@ window.addEventListener('DOMContentLoaded', () => {
       cancelInstallButton.style.display = 'none';
 
       if (result.success) {
-        if (startupError?.code === 'COMPOSE_MISSING' || startupError?.code === 'DOCKER_DAEMON_STOPPED') {
-          showRestartRequired(false);
-        } else {
-          showRestartRequired(true);
-        }
+        const needsRelogin = startupError?.code === 'DOCKER_MISSING' || startupError?.code === 'DOCKER_PERM_MISSING';
+        showRestartRequired(needsRelogin);
         installRunning = false;
       } else if (result.cancelled) {
         resetAfterFailure('error.cancelMsg');

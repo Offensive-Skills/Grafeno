@@ -12,6 +12,7 @@ const {
   selectDynamicSubnets,
   findPostUpConflicts
 } = require('./controllers/composeNetworkAllocator');
+const { parseVersion, versionAtLeast, formatVersion } = require('./controllers/dockerVersion');
 
 let mainWindow;
 let harborCredentials = null;
@@ -146,47 +147,131 @@ function getScriptPath(scriptName) {
   return path.join(basePath, 'scripts', scriptName);
 }
 
-function checkDockerInstalled() {
-  return new Promise((resolve, reject) => {
-    exec('docker --version', (error, stdout, stderr) => {
-      if (error) {
-        const dockerError = new Error('Docker no está instalado o no se encontró. Puedes instalar Docker usando el script de https://github.com/Offensive-Skills/Grafeno/blob/main/setup_docker.sh (para Ubuntu y Kali Linux)');
-        dockerError.code = 'DOCKER_MISSING';
-        return reject(dockerError);
-      }
-      if (process.platform !== 'linux') return resolve();
-      exec('docker compose version --short', (composeError, composeVersion) => {
-        const versionMatch = composeVersion?.match(/v?(\d+)\.(\d+)\.(\d+)/);
-        const version = versionMatch?.slice(1).map(Number);
-        const minimumVersion = [2, 33, 1];
-        const meetsMinimum = version && (version[0] > minimumVersion[0]
-          || (version[0] === minimumVersion[0] && version[1] > minimumVersion[1])
-          || (version[0] === minimumVersion[0] && version[1] === minimumVersion[1] && version[2] >= minimumVersion[2]));
-        if (composeError || !meetsMinimum) {
-          const composeErrorMessage = new Error('Docker Compose v2.33.1 o superior es necesario para la selección explícita del gateway de gestión. Instala/actualiza el plugin docker-compose-plugin y reinicia Grafeno.');
-          composeErrorMessage.code = 'COMPOSE_MISSING';
-          return reject(composeErrorMessage);
-        }
-        exec('docker info', (infoError, infoStdout, infoStderr) => {
-          if (!infoError) return resolve();
-          const combined = `${infoStdout || ''}${infoStderr || ''}`;
-          if (/permission denied|not a docker group|docker\.sock/i.test(combined) || infoError.code === 13) {
-            const permError = new Error('Tu usuario no tiene permisos para comunicarse con Docker. Falta añadirlo al grupo docker.');
-            permError.code = 'DOCKER_PERM_MISSING';
-            return reject(permError);
-          }
-          if (/Is the docker daemon running|Cannot connect to the Docker daemon|connection refused/i.test(combined)) {
-            const daemonError = new Error('El servicio de Docker no está iniciado. Inícialo con: sudo systemctl start docker');
-            daemonError.code = 'DOCKER_DAEMON_STOPPED';
-            return reject(daemonError);
-          }
-          const genericError = new Error('No se pudo conectar con Docker: ' + combined.trim());
-          genericError.code = 'DOCKER_ERROR';
-          return reject(genericError);
-        });
-      });
+const MIN_DOCKER_VERSION = [28, 0, 0];
+const MIN_COMPOSE_VERSION = [2, 33, 1];
+const MIN_DOCKER_LABEL = formatVersion(MIN_DOCKER_VERSION);
+const MIN_COMPOSE_LABEL = formatVersion(MIN_COMPOSE_VERSION);
+
+function execCommand(command) {
+  return new Promise((resolve) => {
+    exec(command, (error, stdout, stderr) => {
+      resolve({ error, stdout: String(stdout || ''), stderr: String(stderr || '') });
     });
   });
+}
+
+function createDockerError(code, message, vars = {}) {
+  const error = new Error(message);
+  error.code = code;
+  error.vars = vars;
+  return error;
+}
+
+function getStandaloneComposeVersion() {
+  return new Promise((resolve) => {
+    exec('docker-compose version', (error, stdout) => {
+      if (error) return resolve(null);
+      const parsed = parseVersion(stdout);
+      resolve(parsed ? formatVersion(parsed) : String(stdout || '').trim() || null);
+    });
+  });
+}
+
+function getDockerPackageName() {
+  return new Promise((resolve) => {
+    exec('dpkg -S "$(command -v docker)"', (error, stdout) => {
+      if (error) return resolve(null);
+      const match = String(stdout || '').match(/^([^:\n]+):/);
+      resolve(match ? match[1].trim() : null);
+    });
+  });
+}
+
+async function checkDockerInstalled() {
+  const dockerResult = await execCommand('docker --version');
+  if (dockerResult.error) {
+    throw createDockerError(
+      'DOCKER_MISSING',
+      'Docker no está instalado o no se encontró. Puedes instalar Docker usando el instalador de Grafeno.'
+    );
+  }
+
+  if (process.platform !== 'linux') return;
+
+  const composeResult = await execCommand('docker compose version --short');
+  const composeVersion = parseVersion(composeResult.stdout);
+
+  if (composeResult.error || !composeVersion) {
+    const standaloneVersion = await getStandaloneComposeVersion();
+    if (standaloneVersion) {
+      throw createDockerError(
+        'COMPOSE_STANDALONE',
+        `Se ha detectado docker-compose ${standaloneVersion}, pero Grafeno necesita el plugin 'docker compose' v${MIN_COMPOSE_LABEL} o superior.`,
+        { version: standaloneVersion, minimum: MIN_COMPOSE_LABEL }
+      );
+    }
+    throw createDockerError(
+      'COMPOSE_MISSING',
+      `No se ha encontrado el plugin 'docker compose'. Grafeno necesita Docker Compose v${MIN_COMPOSE_LABEL} o superior.`,
+      { minimum: MIN_COMPOSE_LABEL }
+    );
+  }
+
+  if (!versionAtLeast(composeVersion, MIN_COMPOSE_VERSION)) {
+    throw createDockerError(
+      'COMPOSE_OUTDATED',
+      `Docker Compose ${formatVersion(composeVersion)} es anterior a v${MIN_COMPOSE_LABEL}, la versión mínima que necesita Grafeno.`,
+      { version: formatVersion(composeVersion), minimum: MIN_COMPOSE_LABEL }
+    );
+  }
+
+  const infoResult = await execCommand("docker info --format '{{.ServerVersion}}'");
+  if (infoResult.error) {
+    const combined = `${infoResult.stdout}${infoResult.stderr}`;
+    if (/permission denied|not a docker group|docker\.sock/i.test(combined) || infoResult.error.code === 13) {
+      throw createDockerError(
+        'DOCKER_PERM_MISSING',
+        'Tu usuario no tiene permisos para comunicarse con Docker. Falta añadirlo al grupo docker.'
+      );
+    }
+    if (/Is the docker daemon running|Cannot connect to the Docker daemon|connection refused/i.test(combined)) {
+      throw createDockerError(
+        'DOCKER_DAEMON_STOPPED',
+        'El servicio de Docker no está iniciado. Inícialo con: sudo systemctl start docker'
+      );
+    }
+    throw createDockerError('DOCKER_ERROR', `No se pudo conectar con Docker: ${combined.trim()}`);
+  }
+
+  const serverVersion = parseVersion(infoResult.stdout);
+  if (!versionAtLeast(serverVersion, MIN_DOCKER_VERSION)) {
+    const packageName = await getDockerPackageName();
+    const versionLabel = packageName
+      ? `${formatVersion(serverVersion)} (${packageName})`
+      : formatVersion(serverVersion);
+    throw createDockerError(
+      'DOCKER_OUTDATED',
+      `Docker ${versionLabel} es anterior a ${MIN_DOCKER_LABEL}, la versión mínima que necesita Grafeno para el gateway de gestión.`,
+      { version: versionLabel, minimum: MIN_DOCKER_LABEL }
+    );
+  }
+
+  console.log(`[docker] Engine ${formatVersion(serverVersion)} | Compose ${formatVersion(composeVersion)}`);
+}
+
+async function refreshDockerStatus() {
+  try {
+    await checkDockerInstalled();
+    startupDockerError = null;
+    return true;
+  } catch (error) {
+    startupDockerError = {
+      code: error.code || 'DOCKER_ERROR',
+      message: error.message,
+      vars: error.vars || {}
+    };
+    return false;
+  }
 }
 
 function createWindow() {
@@ -205,14 +290,12 @@ function createWindow() {
     }
   });
 
-  checkDockerInstalled()
-    .then(() => {
-      mainWindow.loadFile(path.join(__dirname, 'views', 'login', 'login.html'));
-    })
-    .catch((err) => {
-      startupDockerError = { code: err.code || 'DOCKER_ERROR', message: err.message };
-      mainWindow.loadFile(path.join(__dirname, 'views', 'error', 'error.html'));
-    });
+  refreshDockerStatus().then((dockerReady) => {
+    const view = dockerReady
+      ? path.join(__dirname, 'views', 'login', 'login.html')
+      : path.join(__dirname, 'views', 'error', 'error.html');
+    mainWindow.loadFile(view);
+  });
 
   if (process.env.GRAFENO_DEVTOOLS === '1') {
     mainWindow.webContents.openDevTools();
@@ -242,8 +325,12 @@ function createWindow() {
 // ── IPC Handlers ────────────────────────────────────────────────────
 
 // Navegación
-ipcMain.on('login-success', () => {
-  mainWindow.loadFile(path.join(__dirname, 'views/main', 'mainMenu.html'));
+ipcMain.on('login-success', async () => {
+  const dockerReady = await refreshDockerStatus();
+  const view = dockerReady
+    ? path.join(__dirname, 'views', 'main', 'mainMenu.html')
+    : path.join(__dirname, 'views', 'error', 'error.html');
+  mainWindow.loadFile(view);
 });
 
 ipcMain.on('close-app', () => {
@@ -346,6 +433,7 @@ async function runManagedScriptWithAuthRetry(scriptName, args, progressMode, ope
 
 // Docker: ejecutar contenedor (con streaming de progreso)
 ipcMain.handle('docker:run-container', async (_event, title, version, mode) => {
+  if (String(mode) === '0') await checkDockerInstalled();
   const domain = 'harbor.offs.es/challenges/';
   const operationId = `${title}${version}`;
   return runManagedScriptWithAuthRetry('containerManager.sh', [domain, String(title), String(version), String(mode)], 'container', operationId);
@@ -412,7 +500,10 @@ ipcMain.handle('compose:run', async (_event, challengeID, mode) => {
   if (composeOperations.has(id)) throw new Error('Ya hay una operación en curso para este reto.');
   composeOperations.add(id);
   try {
-    if (mode === 'start') return await runComposeStartWithNetworkRetry(id);
+    if (mode === 'start') {
+      await checkDockerInstalled();
+      return await runComposeStartWithNetworkRetry(id);
+    }
     const runtimePath = getVerifiedRuntimeComposePath(id);
     return await runManagedScriptWithAuthRetry('composeManager.sh', ['stop', id, runtimePath], 'none', `compose-${id}`);
   } finally {
