@@ -15,6 +15,8 @@ set -euo pipefail  # Detiene el script ante cualquier error y falla si un pipe f
 MIN_ENGINE_VERSION="28.0.0"
 MIN_COMPOSE_VERSION="2.33.1"
 
+DISTRO_FAMILY=""
+
 # Funciones para formatear la salida
 function echo_info() {
     echo -e "\e[34m[INFO]\e[0m $1"
@@ -70,16 +72,19 @@ function detect_os() {
 
     case "$distro_id" in
         kali)
+            DISTRO_FAMILY="apt"
             echo_info "Distribución detectada: Kali Linux"
             DOCKER_REPO_URL="https://download.docker.com/linux/debian"
             DOCKER_CODENAME="bookworm"
             ;;
         debian)
+            DISTRO_FAMILY="apt"
             echo_info "Distribución detectada: Debian ($codename)"
             DOCKER_REPO_URL="https://download.docker.com/linux/debian"
             DOCKER_CODENAME="$codename"
             ;;
         ubuntu|linuxmint|pop)
+            DISTRO_FAMILY="apt"
             echo_info "Distribución detectada: $NAME ($codename)"
             # Mint/Pop derivan de Ubuntu: priorizar UBUNTU_CODENAME (el codename de Mint no existe en el repo de Docker)
             DOCKER_REPO_URL="https://download.docker.com/linux/ubuntu"
@@ -96,7 +101,7 @@ function detect_os() {
     esac
 }
 
-function configure_docker_repo() {
+function configure_docker_repo_apt() {
     echo_info "Instalando paquetes base (ca-certificates, curl)..."
     apt-get update -y
     apt-get install -y ca-certificates curl gnupg
@@ -110,6 +115,18 @@ function configure_docker_repo() {
 
     echo_info "Actualizando índices de paquetes..."
     apt-get update -y
+}
+
+function configure_docker_repo() {
+    case "$DISTRO_FAMILY" in
+        apt)
+            configure_docker_repo_apt
+            ;;
+        *)
+            echo_error "Gestor de paquetes no soportado: '$DISTRO_FAMILY'."
+            exit 1
+            ;;
+    esac
 }
 
 function compose_plugin_ok() {
@@ -147,7 +164,7 @@ function docker_needs_update() {
     return 1
 }
 
-function remove_conflicting_packages() {
+function remove_conflicting_packages_apt() {
     local pkg
     for pkg in docker-compose-v2 docker-compose docker-buildx docker-doc podman-docker; do
         if dpkg -s "$pkg" >/dev/null 2>&1; then
@@ -164,6 +181,30 @@ function remove_conflicting_packages() {
     if command_exists snap && snap list docker >/dev/null 2>&1; then
         echo_info "Aviso: Docker está instalado como snap y puede tener prioridad sobre el paquete oficial. Desinstálalo con 'sudo snap remove docker' si Grafeno sigue detectando una versión antigua."
     fi
+}
+
+function remove_conflicting_packages() {
+    case "$DISTRO_FAMILY" in
+        apt)
+            remove_conflicting_packages_apt
+            ;;
+        *)
+            echo_error "Gestor de paquetes no soportado: '$DISTRO_FAMILY'."
+            exit 1
+            ;;
+    esac
+}
+
+function install_docker_packages() {
+    case "$DISTRO_FAMILY" in
+        apt)
+            apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+            ;;
+        *)
+            echo_error "Gestor de paquetes no soportado: '$DISTRO_FAMILY'."
+            exit 1
+            ;;
+    esac
 }
 
 # Mostrar banner inicial
@@ -204,7 +245,7 @@ if docker_needs_update; then
     remove_conflicting_packages
 
     echo_info "Instalando Docker Engine y componentes..."
-    apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+    install_docker_packages
 
     if docker_cli_ok && compose_plugin_ok; then
         if docker info >/dev/null 2>&1 && ! docker_engine_ok; then
