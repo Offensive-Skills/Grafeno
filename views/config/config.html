@@ -46,6 +46,37 @@
             <span id="reset-status" class="reset-status"></span>
           </div>
         </section>
+        <!-- Sección: Actualizaciones -->
+        <section class="config-section">
+          <h1 data-i18n="config.updates">Actualizaciones</h1>
+          <p class="section-info" data-i18n="config.updatesInfo">
+            Grafeno puede comprobar si hay una versión nueva y descargarla automáticamente.
+          </p>
+          <div class="update-settings">
+            <div class="update-settings-row">
+              <span data-i18n="config.currentVersion">Versión actual:</span>
+              <span data-app-version></span>
+            </div>
+            <div class="update-settings-row">
+              <span data-i18n="config.updateStatusLabel">Estado:</span>
+              <span id="update-state">—</span>
+            </div>
+            <div class="update-settings-row">
+              <span data-i18n="config.lastCheck">Última comprobación:</span>
+              <span id="update-last-check">—</span>
+            </div>
+            <div class="update-settings-progress" id="update-progress-wrap" hidden>
+              <div class="update-settings-bar" id="update-progress-bar"></div>
+            </div>
+            <div class="update-settings-actions">
+              <button id="btn-check-updates" data-i18n="config.checkUpdates">Buscar actualizaciones</button>
+              <button id="btn-cancel-update" data-i18n="config.cancelDownload" hidden>Cancelar descarga</button>
+              <button id="btn-install-update" data-i18n="config.installUpdate" hidden>Instalar actualización</button>
+            </div>
+            <pre id="update-error" class="update-settings-error" hidden></pre>
+            <p id="update-log-path" class="update-settings-log"></p>
+          </div>
+        </section>
         <!-- Sección: Acerca de -->
         <section class="config-section">
           <h1 data-i18n="config.about">Acerca de</h1>

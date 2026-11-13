@@ -57,10 +57,11 @@
       }
 
       const status = state.state;
+      const canInstall = status === 'downloaded' || (status === 'error' && state.hasPendingUpdate);
       container.hidden = false;
       progress.hidden = status !== 'downloading';
       cancelButton.hidden = status !== 'downloading';
-      installButton.hidden = status !== 'downloaded';
+      installButton.hidden = !canInstall;
       settingsButton.hidden = status !== 'error';
       installButton.disabled = false;
 

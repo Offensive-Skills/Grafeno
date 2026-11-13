@@ -193,4 +193,80 @@ body.dark-theme {
   .reset-status {
     font-size: 16px;
   }
+
+  /* Sección de actualizaciones */
+  .update-settings {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-size: 14px;
+  }
+
+  .update-settings-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .update-settings-row > span:first-child {
+    color: #beefbe;
+  }
+
+  .update-settings-progress {
+    height: 8px;
+    overflow: hidden;
+    background-color: #3f3f3f;
+    border-radius: 4px;
+  }
+
+  .update-settings-bar {
+    width: 0;
+    height: 100%;
+    background-color: #beefbe;
+    transition: width 0.2s ease;
+  }
+
+  .update-settings-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .update-settings-actions button {
+    padding: 8px 14px;
+    border: 2px solid #beefbe;
+    border-radius: 5px;
+    background-color: #2b2b2b;
+    color: #beefbe;
+    font-family: 'Courier Prime', monospace;
+    cursor: pointer;
+    transition: background-color 0.3s, color 0.3s;
+  }
+
+  .update-settings-actions button:hover:not(:disabled) {
+    background-color: #beefbe;
+    color: #2b2b2b;
+  }
+
+  .update-settings-actions button:disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
+
+  .update-settings-error {
+    margin: 0;
+    padding: 8px;
+    border: 1px solid #d14141;
+    border-radius: 5px;
+    color: #ffb4b4;
+    font-size: 12px;
+    white-space: pre-wrap;
+  }
+
+  .update-settings-log {
+    margin: 0;
+    color: #9a9a9a;
+    font-size: 11px;
+    word-break: break-all;
+  }
   

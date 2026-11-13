@@ -14,7 +14,7 @@ const {
 } = require('./controllers/composeNetworkAllocator');
 const { parseVersion, versionAtLeast, formatVersion } = require('./controllers/dockerVersion');
 const { createUpdateState, reduce, canCheck } = require('./controllers/updateState');
-const { detectPackageType, getPackageInstallPlan } = require('./controllers/updatePolicy');
+const { detectPackageType, getPackageInstallPlan, shouldCheckForUpdates, DEFAULT_CHECK_INTERVAL_MS } = require('./controllers/updatePolicy');
 
 let mainWindow;
 let harborCredentials = null;
@@ -26,6 +26,10 @@ let downloadCancellationToken = null;
 let pendingUpdateInfo = null;
 let promptedUpdateVersion = null;
 let updateInstallWindow = null;
+let updateCheckTimer = null;
+const UPDATE_CHECK_INTERVAL_MS = Number(process.env.GRAFENO_UPDATE_INTERVAL_MS) > 0
+  ? Number(process.env.GRAFENO_UPDATE_INTERVAL_MS)
+  : DEFAULT_CHECK_INTERVAL_MS;
 
 function getComposeCacheDir(challengeID) {
   const id = String(challengeID);
@@ -768,8 +772,16 @@ function logUpdateEvent(message) {
   }
 }
 
+function getUpdateStatusPayload() {
+  return {
+    ...updateState,
+    logPath: getUpdateLogPath(),
+    hasPendingUpdate: Boolean(pendingUpdateInfo)
+  };
+}
+
 function broadcastUpdateState() {
-  const payload = { ...updateState, logPath: getUpdateLogPath() };
+  const payload = getUpdateStatusPayload();
   for (const win of BrowserWindow.getAllWindows()) {
     if (!win.isDestroyed()) win.webContents.send('updates:status', payload);
   }
@@ -796,6 +808,7 @@ function handleUpdateError(error) {
 }
 
 async function checkForUpdatesNow() {
+  if (['downloaded', 'installing'].includes(updateState.state)) return updateState;
   if (!canCheck(updateState)) return updateState;
 
   applyUpdateEvent({ type: 'checking' });
@@ -811,10 +824,27 @@ async function checkForUpdatesNow() {
   }
 }
 
-ipcMain.handle('updates:get-status', () => ({
-  ...updateState,
-  logPath: getUpdateLogPath()
-}));
+function startUpdateCheckTimer() {
+  if (updateCheckTimer || !app.isPackaged) return;
+  updateCheckTimer = setInterval(() => {
+    if (shouldCheckForUpdates({
+      isPackaged: app.isPackaged,
+      platform: process.platform,
+      lastCheckAt: updateState.lastCheckedAt,
+      state: updateState.state,
+      intervalMs: UPDATE_CHECK_INTERVAL_MS
+    })) {
+      checkForUpdatesNow();
+    }
+  }, Math.max(1000, UPDATE_CHECK_INTERVAL_MS));
+}
+
+ipcMain.handle('updates:get-status', () => getUpdateStatusPayload());
+
+ipcMain.handle('updates:check-now', async () => {
+  const status = await checkForUpdatesNow();
+  return { ok: true, status: { ...status, logPath: getUpdateLogPath(), hasPendingUpdate: Boolean(pendingUpdateInfo) } };
+});
 
 autoUpdater.autoDownload = false;
 autoUpdater.autoInstallOnAppQuit = false;
@@ -1090,6 +1120,14 @@ autoUpdater.on('error', (err) => {
 app.whenReady().then(() => {
   updateState = { ...updateState, currentVersion: app.getVersion() };
   createWindow();
+  startUpdateCheckTimer();
+});
+
+app.on('before-quit', () => {
+  if (updateCheckTimer) {
+    clearInterval(updateCheckTimer);
+    updateCheckTimer = null;
+  }
 });
 
 app.on('window-all-closed', () => {
