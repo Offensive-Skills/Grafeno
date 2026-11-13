@@ -49,4 +49,13 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // App
   getAppVersion: () => ipcRenderer.invoke('app:get-version'),
   restartApp: () => ipcRenderer.send('restart-app'),
+
+  // Actualizaciones
+  getUpdateStatus: () => ipcRenderer.invoke('updates:get-status'),
+  onUpdateStatus: (callback) => {
+    const handler = (_event, data) => callback(data);
+    ipcRenderer.on('updates:status', handler);
+    return handler;
+  },
+  removeUpdateStatusListener: (handler) => ipcRenderer.removeListener('updates:status', handler),
 });

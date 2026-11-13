@@ -13,11 +13,14 @@ const {
   findPostUpConflicts
 } = require('./controllers/composeNetworkAllocator');
 const { parseVersion, versionAtLeast, formatVersion } = require('./controllers/dockerVersion');
+const { createUpdateState, reduce, canCheck } = require('./controllers/updateState');
 
 let mainWindow;
 let harborCredentials = null;
 const composeOperations = new Set();
 let startupDockerError = null;
+let updateState = createUpdateState();
+let updateLogPath = null;
 
 function getComposeCacheDir(challengeID) {
   const id = String(challengeID);
@@ -319,7 +322,7 @@ function createWindow() {
     mainWindow = null;
   });
 
-  autoUpdater.checkForUpdates();
+  checkForUpdatesNow();
 }
 
 // ── IPC Handlers ────────────────────────────────────────────────────
@@ -736,12 +739,97 @@ ipcMain.on('restart-app', () => {
 
 // ── Configuración de autoUpdater ────────────────────────────────────
 
+function getUpdateLogPath() {
+  if (updateLogPath) return updateLogPath;
+  try {
+    const logDir = app.getPath('logs');
+    fs.mkdirSync(logDir, { recursive: true });
+    updateLogPath = path.join(logDir, 'updater.log');
+  } catch {
+    updateLogPath = path.join(os.tmpdir(), 'grafeno-updater.log');
+  }
+  return updateLogPath;
+}
+
+function logUpdateEvent(message) {
+  try {
+    const logPath = getUpdateLogPath();
+    if (fs.existsSync(logPath) && fs.statSync(logPath).size > 1024 * 1024) {
+      fs.truncateSync(logPath, 0);
+    }
+    fs.appendFileSync(logPath, `[${new Date().toISOString()}] ${message}\n`, 'utf8');
+  } catch {
+    // El log de actualización nunca debe romper la app.
+  }
+}
+
+function broadcastUpdateState() {
+  const payload = { ...updateState, logPath: getUpdateLogPath() };
+  for (const win of BrowserWindow.getAllWindows()) {
+    if (!win.isDestroyed()) win.webContents.send('updates:status', payload);
+  }
+}
+
+function applyUpdateEvent(event) {
+  updateState = reduce(updateState, event);
+  updateState.currentVersion = app.getVersion();
+  broadcastUpdateState();
+
+  if (event.type === 'progress') return updateState;
+
+  if (event.type === 'error') {
+    logUpdateEvent(`ERROR: ${event.error && event.error.message ? event.error.message : 'desconocido'}`);
+  } else {
+    logUpdateEvent(`${event.type}${event.version ? ` ${event.version}` : ''}`);
+  }
+  return updateState;
+}
+
+function handleUpdateError(error) {
+  applyUpdateEvent({ type: 'error', error, at: Date.now() });
+  logUpdateEvent(error && error.stack ? error.stack : String(error));
+}
+
+async function checkForUpdatesNow() {
+  if (!canCheck(updateState)) return updateState;
+
+  applyUpdateEvent({ type: 'checking' });
+  try {
+    const result = await autoUpdater.checkForUpdates();
+    if (result == null && updateState.state === 'checking') {
+      applyUpdateEvent({ type: 'not-available' });
+    }
+    return updateState;
+  } catch (error) {
+    handleUpdateError(error);
+    return updateState;
+  }
+}
+
+ipcMain.handle('updates:get-status', () => ({
+  ...updateState,
+  logPath: getUpdateLogPath()
+}));
+
+autoUpdater.on('checking-for-update', () => {
+  applyUpdateEvent({ type: 'checking' });
+});
+
 autoUpdater.on('update-available', (info) => {
-  console.log('Actualización disponible:', info);
+  applyUpdateEvent({ type: 'available', version: info && info.version ? info.version : null });
+});
+
+autoUpdater.on('update-not-available', () => {
+  applyUpdateEvent({ type: 'not-available' });
 });
 
 autoUpdater.on('update-downloaded', (info) => {
-  console.log('Actualización descargada:', info);
+  applyUpdateEvent({
+    type: 'downloaded',
+    version: info && info.version ? info.version : null,
+    total: info && info.files && info.files[0] ? info.files[0].size : 0
+  });
+
   const updaterStrings = (app.getLocale() || 'es').startsWith('en')
     ? { title: 'Update available', message: 'The update has been downloaded. Restart the application to install it?', buttons: ['Restart', 'Later'] }
     : { title: 'Actualización disponible', message: 'La actualización se ha descargado. ¿Deseas reiniciar la aplicación para instalarla?', buttons: ['Reiniciar', 'Más tarde'] };
@@ -760,16 +848,21 @@ autoUpdater.on('update-downloaded', (info) => {
     if (result.response === 0) {
       autoUpdater.quitAndInstall();
     }
+  }).catch((error) => {
+    handleUpdateError(error);
   });
 });
 
 autoUpdater.on('error', (err) => {
-  console.error('Error durante la actualización:', err);
+  handleUpdateError(err);
 });
 
 // ── Ciclo de vida de la app ─────────────────────────────────────────
 
-app.whenReady().then(createWindow);
+app.whenReady().then(() => {
+  updateState = { ...updateState, currentVersion: app.getVersion() };
+  createWindow();
+});
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
