@@ -21,10 +21,12 @@ Download the `.deb` package from the [GitHub releases page](https://github.com/O
 - **Docker:** Grafeno requires Docker Engine 28.0.0 or higher and the Docker Compose plugin 2.33.1 or higher (`docker compose`, not the legacy `docker-compose`). We recommend updating your system before proceeding:
 
   > ***Note:***
-  > If you don't have Docker installed (or your version is below the minimum), run:
+  > If you don't have Docker installed (or your version is below the minimum), run the installer:
   > ```bash
   > curl -fsSL 'https://raw.githubusercontent.com/Offensive-Skills/Grafeno/main/setup_docker.sh' | sudo bash -s
   > ```
+  >
+  > The bundled installer supports **Ubuntu, Debian and Kali Linux**. On **Fedora**, install Docker Engine manually from the [official Docker repository](https://docs.docker.com/engine/install/fedora/); Grafeno will detect Docker and the `docker compose` plugin once installed.
   >
   > Alternatively, follow the instructions in the [official Docker documentation](https://docs.docker.com/get-docker/).
 
