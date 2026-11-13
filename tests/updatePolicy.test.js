@@ -33,7 +33,7 @@ test('package install plans use package managers without a shell', () => {
   assert.deepEqual(getPackageInstallPlan('rpm', '/tmp/a.rpm'), {
     needsSudo: true,
     command: 'rpm',
-    args: ['-U', '/tmp/a.rpm']
+    args: ['-U', '--nosignature', '/tmp/a.rpm']
   });
   assert.deepEqual(getPackageInstallPlan('appimage', '/tmp/a.AppImage'), {
     needsSudo: false,

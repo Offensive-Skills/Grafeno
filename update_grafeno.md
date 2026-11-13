@@ -162,6 +162,10 @@ npm run dist:mac:arm64
 - Las versiones **≤ 1.0.8** usan `electron-updater` 6.3.9, que no tiene fallback a `sudo` si no encuentra `gksudo`, `kdesudo`, `pkexec` ni `beesu`. En esos sistemas la instalación automática del `.deb` falla; hay que actualizar a mano una vez. La 2.2.0 ya usa 6.8.3, que sí tiene fallback.
 - La release **v2.2.0** no tiene `latest-linux.yml` para x64 (se perdió al reemplazar los binarios a mano). Los clientes anteriores a 2.2.0 no verán esa versión; la siguiente Release publicada con el workflow nuevo incluirá todos los metadatos y se actualizarán directamente a ella.
 
+## Fedora / RPM
+
+El updater de RPM usa `rpm -U --nosignature` porque los paquetes de Grafeno no están firmados con GPG. Antes de instalar, Grafeno verifica el `sha512` y el tamaño del paquete descargado contra `latest-linux.yml`; si no coinciden, aborta. Si en el futuro se firman los RPM, se puede quitar `--nosignature`.
+
 ## macOS: actualización manual
 
 La autoactualización está **desactivada en macOS** a propósito. Los usuarios de macOS deben descargar el `.dmg` de la Release e instalarlo manualmente.

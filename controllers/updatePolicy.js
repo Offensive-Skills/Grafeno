@@ -31,7 +31,7 @@ function getPackageInstallPlan(packageType, filePath) {
       return {
         needsSudo: true,
         command: 'rpm',
-        args: ['-U', filePath]
+        args: ['-U', '--nosignature', filePath]
       };
     case 'appimage':
       return { needsSudo: false, native: true };
