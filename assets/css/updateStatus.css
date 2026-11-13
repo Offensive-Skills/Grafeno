@@ -1,0 +1,67 @@
+/* Estado de actualizaciones */
+.update-status {
+  position: fixed;
+  left: 16px;
+  bottom: 36px;
+  z-index: 6;
+  max-width: 340px;
+  padding: 10px 12px;
+  background-color: rgba(43, 43, 43, 0.94);
+  border: 1px solid #beefbe;
+  border-radius: 8px;
+  color: #e0e0e0;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.update-status [hidden] {
+  display: none !important;
+}
+
+.update-status-text {
+  display: block;
+  margin-bottom: 6px;
+  color: #beefbe;
+}
+
+.update-status-progress {
+  height: 6px;
+  margin-bottom: 6px;
+  background-color: #3f3f3f;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.update-status-bar {
+  width: 0;
+  height: 100%;
+  background-color: #beefbe;
+  transition: width 0.2s ease;
+}
+
+.update-status-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.update-status-actions button {
+  padding: 3px 8px;
+  border: 1px solid #beefbe;
+  border-radius: 4px;
+  background-color: #2b2b2b;
+  color: #beefbe;
+  font-family: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.update-status-actions button:hover:not(:disabled) {
+  background-color: #beefbe;
+  color: #2b2b2b;
+}
+
+.update-status-actions button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}

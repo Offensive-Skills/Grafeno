@@ -94,6 +94,17 @@
       'config.about': 'Acerca de',
       'config.versionLabel': 'Versión',
 
+      // --- Actualizaciones ---
+      'update.available': 'Actualización {version} disponible',
+      'update.downloading': 'Descargando actualización... {percent}%',
+      'update.ready': 'Actualización {version} lista',
+      'update.installing': 'Instalando actualización...',
+      'update.error': 'No se pudo actualizar',
+      'update.cancel': 'Cancelar',
+      'update.install': 'Reiniciar ahora',
+      'update.settings': 'Configuración',
+      'update.unsupported': 'Actualizaciones automáticas no disponibles en macOS',
+
       // --- Docker Manager ---
       'docker.ipContainer': 'IP del contenedor: ',
       'docker.ipCompose': 'IP del servicio principal: ',
@@ -286,6 +297,17 @@
       'config.back': 'Back',
       'config.about': 'About',
       'config.versionLabel': 'Version',
+
+      // --- Updates ---
+      'update.available': 'Update {version} available',
+      'update.downloading': 'Downloading update... {percent}%',
+      'update.ready': 'Update {version} ready',
+      'update.installing': 'Installing update...',
+      'update.error': 'Could not update',
+      'update.cancel': 'Cancel',
+      'update.install': 'Restart now',
+      'update.settings': 'Settings',
+      'update.unsupported': 'Automatic updates are not available on macOS',
 
       // --- Docker Manager ---
       'docker.ipContainer': 'Container IP: ',

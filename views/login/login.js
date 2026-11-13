@@ -1,6 +1,8 @@
 // views/login/login.js
 
 window.addEventListener('DOMContentLoaded', () => {
+  window.UpdateStatus.mount(document.getElementById('update-status'));
+
   // Generar el código QR en el contenedor
   const qrContainer = document.querySelector(".qr-container");
   const qrCode = new QRCodeStyling({

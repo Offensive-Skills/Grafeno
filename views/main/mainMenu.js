@@ -3,6 +3,7 @@
 window.addEventListener('DOMContentLoaded', () => {
   initMenuButtons();
   initStats();
+  window.UpdateStatus.mount(document.getElementById('update-status'));
 });
 
 /**

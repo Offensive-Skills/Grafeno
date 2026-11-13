@@ -5,7 +5,7 @@ const fs = require('fs');
 const os = require('os');
 const crypto = require('crypto');
 const { spawn, exec, execFile } = require('child_process');
-const { autoUpdater } = require('electron-updater');
+const { autoUpdater, CancellationToken } = require('electron-updater');
 const {
   parseNetworkTemplates,
   renderComposeTemplate,
@@ -21,6 +21,9 @@ const composeOperations = new Set();
 let startupDockerError = null;
 let updateState = createUpdateState();
 let updateLogPath = null;
+let downloadCancellationToken = null;
+let pendingUpdateInfo = null;
+let promptedUpdateVersion = null;
 
 function getComposeCacheDir(challengeID) {
   const id = String(challengeID);
@@ -811,12 +814,60 @@ ipcMain.handle('updates:get-status', () => ({
   logPath: getUpdateLogPath()
 }));
 
+autoUpdater.autoDownload = false;
+autoUpdater.autoInstallOnAppQuit = false;
+
+function startUpdateDownload() {
+  if (updateState.state !== 'available' || downloadCancellationToken) return;
+
+  const token = new CancellationToken();
+  downloadCancellationToken = token;
+  applyUpdateEvent({ type: 'downloading', version: updateState.version });
+
+  autoUpdater.downloadUpdate(token).catch((error) => {
+    if (token.cancelled) return;
+    handleUpdateError(error);
+  }).finally(() => {
+    if (downloadCancellationToken === token) downloadCancellationToken = null;
+  });
+}
+
+function cancelUpdateDownload() {
+  if (!downloadCancellationToken) return false;
+  downloadCancellationToken.cancel();
+  downloadCancellationToken = null;
+  applyUpdateEvent({ type: 'cancelled' });
+  return true;
+}
+
+function requestInstallUpdate() {
+  if (updateState.state !== 'downloaded') {
+    return { success: false, error: 'No hay una actualización descargada.' };
+  }
+  autoUpdater.quitAndInstall();
+  return { success: true };
+}
+
+ipcMain.handle('updates:cancel-download', () => ({ ok: cancelUpdateDownload() }));
+ipcMain.handle('updates:install', () => requestInstallUpdate());
+
 autoUpdater.on('checking-for-update', () => {
   applyUpdateEvent({ type: 'checking' });
 });
 
 autoUpdater.on('update-available', (info) => {
   applyUpdateEvent({ type: 'available', version: info && info.version ? info.version : null });
+  startUpdateDownload();
+});
+
+autoUpdater.on('download-progress', (progress) => {
+  applyUpdateEvent({
+    type: 'progress',
+    percent: progress && progress.percent ? progress.percent : 0,
+    bytesPerSecond: progress && progress.bytesPerSecond ? progress.bytesPerSecond : 0,
+    transferred: progress && progress.transferred ? progress.transferred : 0,
+    total: progress && progress.total ? progress.total : 0
+  });
 });
 
 autoUpdater.on('update-not-available', () => {
@@ -824,20 +875,35 @@ autoUpdater.on('update-not-available', () => {
 });
 
 autoUpdater.on('update-downloaded', (info) => {
+  pendingUpdateInfo = info;
   applyUpdateEvent({
     type: 'downloaded',
     version: info && info.version ? info.version : null,
     total: info && info.files && info.files[0] ? info.files[0].size : 0
   });
 
+  const version = info && info.version ? info.version : '';
+  if (promptedUpdateVersion === version) return;
+  promptedUpdateVersion = version;
+
   const updaterStrings = (app.getLocale() || 'es').startsWith('en')
-    ? { title: 'Update available', message: 'The update has been downloaded. Restart the application to install it?', buttons: ['Restart', 'Later'] }
-    : { title: 'Actualización disponible', message: 'La actualización se ha descargado. ¿Deseas reiniciar la aplicación para instalarla?', buttons: ['Reiniciar', 'Más tarde'] };
+    ? {
+      title: 'Update ready',
+      message: 'The update has been downloaded. Restart Grafeno now to install it?',
+      buttons: ['Restart now', 'Close']
+    }
+    : {
+      title: 'Actualización lista',
+      message: 'La actualización se ha descargado. ¿Quieres reiniciar Grafeno ahora para instalarla?',
+      buttons: ['Reiniciar ahora', 'Cerrar']
+    };
   const dialogOptions = {
     type: 'info',
     title: updaterStrings.title,
     message: updaterStrings.message,
-    buttons: updaterStrings.buttons
+    buttons: updaterStrings.buttons,
+    defaultId: 0,
+    cancelId: 1
   };
 
   const showDialog = mainWindow && !mainWindow.isDestroyed()
@@ -845,9 +911,7 @@ autoUpdater.on('update-downloaded', (info) => {
     : dialog.showMessageBox(dialogOptions);
 
   showDialog.then((result) => {
-    if (result.response === 0) {
-      autoUpdater.quitAndInstall();
-    }
+    if (result.response === 0) requestInstallUpdate();
   }).catch((error) => {
     handleUpdateError(error);
   });

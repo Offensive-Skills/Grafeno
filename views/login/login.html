@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <title data-i18n="title.login">Grafeno</title>
     <link rel="stylesheet" href="../../assets/css/login.css" />
+    <link rel="stylesheet" href="../../assets/css/updateStatus.css" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link
       href="https://fonts.googleapis.com/css2?family=Courier+Prime&display=swap"
@@ -12,6 +13,7 @@
   </head>
   <body>
     <canvas id="bgCanvas"></canvas>
+    <div id="update-status" class="update-status" hidden></div>
     <div class="login-overlay" id="loginOverlay">
       <div class="loading-overlay" id="loadingOverlay">
         <div class="spinner"></div>
@@ -75,6 +77,7 @@
     <script src="../../controllers/apiEndpoints.js"></script>
     <script src="../background/background.js"></script>
     <script src="../shared/i18n.js"></script>
+    <script src="../shared/UpdateStatus.js"></script>
     <script src="login.js"></script>
   </body>
 </html>

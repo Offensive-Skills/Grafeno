@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title data-i18n="title.mainMenu">Grafeno - Menú Principal</title>
     <link rel="stylesheet" href="../../assets/css/mainMenu.css">
+    <link rel="stylesheet" href="../../assets/css/updateStatus.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Courier+Prime&display=swap" rel="stylesheet">
     <!-- Incluye Chart.js para poder usar la variable Chart -->
@@ -37,12 +38,15 @@
       </div>
 
       <span class="app-version" data-app-version></span>
+
+      <div id="update-status" class="update-status" hidden></div>
     </div>
     
     <script src="../../controllers/apiEndpoints.js"></script>
     <script src="../background/background.js"></script>
     <script src="../shared/i18n.js"></script>
     <script src="../shared/version.js"></script>
+    <script src="../shared/UpdateStatus.js"></script>
     <script src="mainMenu.js"></script>
   </body>
 </html>
