@@ -153,6 +153,15 @@ npm run dist:mac:arm64
 - El auto-updater compara la versión del release con la de `package.json` embebida en la app instalada. Por eso es importante no saltarse versiones ni reutilizar tags existentes.
 - Si una Release se edita manualmente en GitHub para convertirla de "Published" a "Draft", `electron-updater` no la detectará. Los metadatos en `latest*.yml` deben coincidir estrictamente con una release pública.
 
+## Actualización manual y clientes antiguos
+
+- Si la actualización automática falla, descarga el `.deb`, `.AppImage` o `.dmg` de la Release e instálalo manualmente. En Linux:
+  ```bash
+  sudo apt install ./grafeno_X.Y.Z_amd64.deb
+  ```
+- Las versiones **≤ 1.0.8** usan `electron-updater` 6.3.9, que no tiene fallback a `sudo` si no encuentra `gksudo`, `kdesudo`, `pkexec` ni `beesu`. En esos sistemas la instalación automática del `.deb` falla; hay que actualizar a mano una vez. La 2.2.0 ya usa 6.8.3, que sí tiene fallback.
+- La release **v2.2.0** no tiene `latest-linux.yml` para x64 (se perdió al reemplazar los binarios a mano). Los clientes anteriores a 2.2.0 no verán esa versión; la siguiente Release publicada con el workflow nuevo incluirá todos los metadatos y se actualizarán directamente a ella.
+
 ## macOS: actualización manual
 
 La autoactualización está **desactivada en macOS** a propósito. Los usuarios de macOS deben descargar el `.dmg` de la Release e instalarlo manualmente.
