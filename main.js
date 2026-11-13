@@ -14,6 +14,7 @@ const {
 } = require('./controllers/composeNetworkAllocator');
 const { parseVersion, versionAtLeast, formatVersion } = require('./controllers/dockerVersion');
 const { createUpdateState, reduce, canCheck } = require('./controllers/updateState');
+const { detectPackageType, getPackageInstallPlan } = require('./controllers/updatePolicy');
 
 let mainWindow;
 let harborCredentials = null;
@@ -24,6 +25,7 @@ let updateLogPath = null;
 let downloadCancellationToken = null;
 let pendingUpdateInfo = null;
 let promptedUpdateVersion = null;
+let updateInstallWindow = null;
 
 function getComposeCacheDir(challengeID) {
   const id = String(challengeID);
@@ -840,16 +842,178 @@ function cancelUpdateDownload() {
   return true;
 }
 
-function requestInstallUpdate() {
-  if (updateState.state !== 'downloaded') {
+function getInstalledPackageType() {
+  if (process.env.APPIMAGE) return 'appimage';
+  try {
+    const packageTypePath = path.join(process.resourcesPath, 'package-type');
+    if (fs.existsSync(packageTypePath)) {
+      return detectPackageType(fs.readFileSync(packageTypePath, 'utf8'), process.env.APPIMAGE);
+    }
+  } catch {
+    // Sin package-type no se puede instalar de forma personalizada.
+  }
+  return 'unknown';
+}
+
+function findPackageFileInfo(info, packageType) {
+  const extension = packageType === 'deb' ? '.deb' : packageType === 'rpm' ? '.rpm' : null;
+  if (!extension || !info || !Array.isArray(info.files)) return null;
+  return info.files.find((file) => typeof file.url === 'string' && file.url.toLowerCase().endsWith(extension)) || null;
+}
+
+function verifyDownloadedPackage(info, packageType) {
+  const filePath = info && info.downloadedFile;
+  if (!filePath || !fs.existsSync(filePath)) throw new Error('No se encontró el paquete descargado.');
+
+  const fileInfo = findPackageFileInfo(info, packageType);
+  if (!fileInfo) throw new Error('La actualización no incluye un paquete válido.');
+
+  const stats = fs.statSync(filePath);
+  if (fileInfo.size && stats.size !== fileInfo.size) throw new Error('El tamaño del paquete no coincide.');
+
+  const hash = crypto.createHash('sha512').update(fs.readFileSync(filePath)).digest('base64');
+  if (fileInfo.sha512 && hash !== fileInfo.sha512) throw new Error('La firma del paquete no coincide.');
+  return filePath;
+}
+
+function runSudoCommand(password, command, args, timeoutMs = 10 * 60 * 1000) {
+  return new Promise((resolve) => {
+    const child = spawn('sudo', ['-S', command, ...args], { detached: false });
+    let output = '';
+    let settled = false;
+    const stripAnsi = (text) => text.replace(/\x1B\[[0-9;]*[a-zA-Z]/g, '').replace(/\r/g, '');
+    const timer = setTimeout(() => {
+      try {
+        child.kill('SIGKILL');
+      } catch {
+        // El proceso ya terminó.
+      }
+    }, timeoutMs);
+    const finish = (result) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      resolve(result);
+    };
+
+    try {
+      child.stdin.write(password + '\n');
+      child.stdin.end();
+    } catch {
+      // El proceso pudo haber terminado antes de recibir la contraseña.
+    }
+
+    child.stdout.on('data', (data) => {
+      output += stripAnsi(data.toString());
+    });
+    child.stderr.on('data', (data) => {
+      const text = stripAnsi(data.toString());
+      if (!/password for|\[sudo\]/i.test(text)) output += text;
+    });
+    child.on('error', (error) => finish({ success: false, output: `${output}${error.message}` }));
+    child.on('close', (code) => finish({ success: code === 0, output }));
+  });
+}
+
+async function installDownloadedUpdate(password) {
+  if (!pendingUpdateInfo) {
     return { success: false, error: 'No hay una actualización descargada.' };
   }
-  autoUpdater.quitAndInstall();
-  return { success: true };
+
+  const packageType = getInstalledPackageType();
+  const plan = getPackageInstallPlan(packageType, pendingUpdateInfo.downloadedFile);
+  if (!plan) {
+    return { success: false, error: 'El tipo de paquete instalado no permite actualizar automáticamente.' };
+  }
+  if (plan.native) {
+    autoUpdater.quitAndInstall();
+    return { success: true, native: true };
+  }
+  if (typeof password !== 'string' || password.length === 0 || password.length > 256) {
+    return { success: false, error: 'Introduce tu contraseña de administrador.' };
+  }
+
+  try {
+    verifyDownloadedPackage(pendingUpdateInfo, packageType);
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+
+  applyUpdateEvent({ type: 'installing' });
+  const runPlan = (command, args) => runSudoCommand(password, command, args);
+  let result = await runPlan(plan.command, plan.args);
+  if (!result.success && plan.fallback) {
+    result = await runPlan(plan.fallback.command, plan.fallback.args);
+  }
+
+  if (!result.success) {
+    applyUpdateEvent({ type: 'error', error: new Error(result.output || 'No se pudo instalar el paquete.') });
+    return { success: false, error: 'No se pudo instalar la actualización.', output: result.output };
+  }
+
+  logUpdateEvent(`installed ${updateState.version}`);
+  setImmediate(() => {
+    app.relaunch();
+    app.exit(0);
+  });
+  return { success: true, output: result.output };
+}
+
+function openUpdateInstallWindow() {
+  if (updateInstallWindow && !updateInstallWindow.isDestroyed()) {
+    updateInstallWindow.focus();
+    return;
+  }
+
+  const parent = mainWindow && !mainWindow.isDestroyed() ? mainWindow : undefined;
+  updateInstallWindow = new BrowserWindow({
+    width: 460,
+    height: 340,
+    parent,
+    modal: Boolean(parent),
+    resizable: false,
+    minimizable: false,
+    maximizable: false,
+    title: 'Instalar actualización',
+    backgroundColor: '#2f3136',
+    webPreferences: {
+      nodeIntegration: false,
+      contextIsolation: true,
+      preload: path.join(__dirname, 'views', 'update', 'password-preload.js')
+    }
+  });
+
+  updateInstallWindow.setMenu(null);
+  updateInstallWindow.loadFile(path.join(__dirname, 'views', 'update', 'password.html'));
+  updateInstallWindow.on('closed', () => {
+    updateInstallWindow = null;
+  });
+}
+
+function beginUpdateInstall() {
+  if (!pendingUpdateInfo || !['downloaded', 'error'].includes(updateState.state)) {
+    return { success: false, error: 'No hay una actualización lista para instalar.' };
+  }
+
+  const packageType = getInstalledPackageType();
+  if (packageType === 'appimage') {
+    autoUpdater.quitAndInstall();
+    return { success: true, native: true };
+  }
+  if (packageType !== 'deb' && packageType !== 'rpm') {
+    return { success: false, error: 'El tipo de paquete instalado no permite actualizar automáticamente.' };
+  }
+
+  openUpdateInstallWindow();
+  return { success: true, needsPassword: true };
 }
 
 ipcMain.handle('updates:cancel-download', () => ({ ok: cancelUpdateDownload() }));
-ipcMain.handle('updates:install', () => requestInstallUpdate());
+ipcMain.handle('updates:install', () => beginUpdateInstall());
+ipcMain.handle('updates:install-with-password', async (_event, password) => installDownloadedUpdate(password));
+ipcMain.on('updates:close-install-window', () => {
+  if (updateInstallWindow && !updateInstallWindow.isDestroyed()) updateInstallWindow.close();
+});
 
 autoUpdater.on('checking-for-update', () => {
   applyUpdateEvent({ type: 'checking' });
@@ -911,7 +1075,7 @@ autoUpdater.on('update-downloaded', (info) => {
     : dialog.showMessageBox(dialogOptions);
 
   showDialog.then((result) => {
-    if (result.response === 0) requestInstallUpdate();
+    if (result.response === 0) beginUpdateInstall();
   }).catch((error) => {
     handleUpdateError(error);
   });

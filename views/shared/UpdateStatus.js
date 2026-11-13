@@ -37,11 +37,11 @@
         if (result && result.success === false) {
           text.textContent = window.i18n.t('update.error');
           container.hidden = false;
-          installButton.disabled = false;
         }
       } catch {
         text.textContent = window.i18n.t('update.error');
         container.hidden = false;
+      } finally {
         installButton.disabled = false;
       }
     });
