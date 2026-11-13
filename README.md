@@ -26,7 +26,7 @@ Descarga el paquete `.deb` desde la [página de releases de GitHub](https://gith
   > curl -fsSL 'https://raw.githubusercontent.com/Offensive-Skills/Grafeno/main/setup_docker.sh' | sudo bash -s
   > ```
   >
-  > El instalador integrado soporta **Ubuntu, Debian y Kali Linux**. En **Fedora** instala Docker Engine manualmente desde el [repositorio oficial de Docker](https://docs.docker.com/engine/install/fedora/); Grafeno detectará Docker y el plugin `docker compose` una vez instalados.
+  > El instalador integrado soporta **Ubuntu, Debian, Kali Linux y Fedora 43 o superior**.
   >
   > O sigue las instrucciones en [la documentación de Docker](https://docs.docker.com/get-docker/).
 

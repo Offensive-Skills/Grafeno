@@ -26,7 +26,7 @@ Download the `.deb` package from the [GitHub releases page](https://github.com/O
   > curl -fsSL 'https://raw.githubusercontent.com/Offensive-Skills/Grafeno/main/setup_docker.sh' | sudo bash -s
   > ```
   >
-  > The bundled installer supports **Ubuntu, Debian and Kali Linux**. On **Fedora**, install Docker Engine manually from the [official Docker repository](https://docs.docker.com/engine/install/fedora/); Grafeno will detect Docker and the `docker compose` plugin once installed.
+  > The bundled installer supports **Ubuntu, Debian, Kali Linux and Fedora 43 or newer**.
   >
   > Alternatively, follow the instructions in the [official Docker documentation](https://docs.docker.com/get-docker/).
 

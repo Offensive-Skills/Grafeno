@@ -2,9 +2,9 @@
 # setup_docker.sh - Script de instalación para la aplicación Grafeno, de Offensive Skills
 
 # Descripción:
-# - Instala Docker en el equipo (Ubuntu, Debian y Kali Linux).
+# - Instala Docker en el equipo (Ubuntu, Debian, Kali Linux y Fedora 43+).
 # - Instala o actualiza Docker Engine y docker-compose-plugin a las versiones mínimas requeridas por Grafeno.
-# - Elimina paquetes incompatibles de la distribución (docker-compose, docker-compose-v2, docker-buildx, podman-docker) que chocan con los oficiales.
+# - Elimina paquetes incompatibles de la distribución que chocan con los oficiales.
 # - Añade al usuario actual al grupo 'docker'.
 # - Detecta la distribución mediante /etc/os-release (sin depender de lsb_release).
 # - Puede ejecutarse de forma segura con: bash setup_docker.sh  (sin pipe de red)
@@ -16,6 +16,9 @@ MIN_ENGINE_VERSION="28.0.0"
 MIN_COMPOSE_VERSION="2.33.1"
 
 DISTRO_FAMILY=""
+DOCKER_REPO_URL=""
+DOCKER_CODENAME=""
+DOCKER_REPO_FILE=""
 
 # Funciones para formatear la salida
 function echo_info() {
@@ -69,6 +72,7 @@ function detect_os() {
     . /etc/os-release
     local distro_id="${ID:-unknown}"
     local codename="${VERSION_CODENAME:-}"
+    local version_id="${VERSION_ID:-}"
 
     case "$distro_id" in
         kali)
@@ -94,6 +98,16 @@ function detect_os() {
                 exit 1
             fi
             ;;
+        fedora)
+            DISTRO_FAMILY="dnf"
+            local fedora_major="${version_id%%.*}"
+            if ! [[ "$fedora_major" =~ ^[0-9]+$ ]] || (( fedora_major < 43 )); then
+                echo_error "Fedora ${version_id:-desconocida} no está soportada. Se requiere Fedora 43 o superior."
+                exit 1
+            fi
+            echo_info "Distribución detectada: Fedora $version_id"
+            DOCKER_REPO_FILE="https://download.docker.com/linux/fedora/docker-ce.repo"
+            ;;
         *)
             echo_error "Distribución no soportada: '$distro_id'. Instala Docker manualmente: https://docs.docker.com/engine/install/"
             exit 1
@@ -117,10 +131,24 @@ function configure_docker_repo_apt() {
     apt-get update -y
 }
 
+function configure_docker_repo_dnf() {
+    echo_info "Instalando paquetes base (ca-certificates, curl)..."
+    dnf install -y ca-certificates curl
+
+    echo_info "Configurando el repositorio oficial de Docker..."
+    if ! dnf config-manager addrepo --from-repofile "$DOCKER_REPO_FILE" >/dev/null 2>&1; then
+        echo_info "dnf config-manager no está disponible; descargando el repositorio directamente..."
+        curl -fsSL "$DOCKER_REPO_FILE" -o /etc/yum.repos.d/docker-ce.repo
+    fi
+}
+
 function configure_docker_repo() {
     case "$DISTRO_FAMILY" in
         apt)
             configure_docker_repo_apt
+            ;;
+        dnf)
+            configure_docker_repo_dnf
             ;;
         *)
             echo_error "Gestor de paquetes no soportado: '$DISTRO_FAMILY'."
@@ -183,10 +211,26 @@ function remove_conflicting_packages_apt() {
     fi
 }
 
+function remove_conflicting_packages_dnf() {
+    local pkg
+    for pkg in docker docker-client docker-client-latest docker-common \
+               docker-latest docker-latest-logrotate docker-logrotate \
+               docker-selinux docker-engine-selinux docker-engine \
+               podman-docker; do
+        if rpm -q "$pkg" >/dev/null 2>&1; then
+            echo_info "Eliminando paquete incompatible: $pkg"
+            dnf remove -y "$pkg"
+        fi
+    done
+}
+
 function remove_conflicting_packages() {
     case "$DISTRO_FAMILY" in
         apt)
             remove_conflicting_packages_apt
+            ;;
+        dnf)
+            remove_conflicting_packages_dnf
             ;;
         *)
             echo_error "Gestor de paquetes no soportado: '$DISTRO_FAMILY'."
@@ -200,11 +244,32 @@ function install_docker_packages() {
         apt)
             apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
             ;;
+        dnf)
+            dnf install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+            ;;
         *)
             echo_error "Gestor de paquetes no soportado: '$DISTRO_FAMILY'."
             exit 1
             ;;
     esac
+}
+
+function ensure_docker_daemon() {
+    echo_info "Iniciando el servicio de Docker..."
+    systemctl enable --now docker || true
+
+    if ! systemctl is-active --quiet docker; then
+        if command_exists journalctl && journalctl -u docker --no-pager -n 100 2>/dev/null | grep -qi "failed to find iptables"; then
+            echo_info "Ajustando iptables a nft para que Docker pueda arrancar..."
+            alternatives --set iptables /usr/bin/iptables-nft || true
+            systemctl restart docker || true
+        fi
+    fi
+
+    if ! docker info >/dev/null 2>&1; then
+        echo_error "Docker se ha instalado pero el daemon no responde. Revisa 'systemctl status docker'."
+        exit 1
+    fi
 }
 
 # Mostrar banner inicial
@@ -234,7 +299,7 @@ detect_os
 print_separator
 
 # Paso 1: Configurar el repositorio de Docker cuando Docker Engine o el plugin Compose no cumplen el mínimo.
-# Una vez configurado, apt instala tanto Docker Engine como el plugin desde el mismo repo.
+# Una vez configurado, el gestor de paquetes instala tanto Docker Engine como el plugin desde el mismo repo.
 if docker_needs_update; then
     if command_exists docker; then
         echo_info "Docker está instalado, pero no cumple los mínimos (Docker ${MIN_ENGINE_VERSION}+ y plugin Compose ${MIN_COMPOSE_VERSION}+). Se actualizará."
@@ -246,12 +311,9 @@ if docker_needs_update; then
 
     echo_info "Instalando Docker Engine y componentes..."
     install_docker_packages
+    ensure_docker_daemon
 
-    if docker_cli_ok && compose_plugin_ok; then
-        if docker info >/dev/null 2>&1 && ! docker_engine_ok; then
-            echo_error "Docker Engine sigue por debajo de la versión mínima ${MIN_ENGINE_VERSION}."
-            exit 1
-        fi
+    if docker_cli_ok && compose_plugin_ok && docker_engine_ok; then
         echo_success "Docker y el plugin Compose se han instalado/actualizado correctamente (Docker ${MIN_ENGINE_VERSION}+, Compose ${MIN_COMPOSE_VERSION}+)."
     else
         echo_error "Fallo al instalar Docker o el plugin Compose."
