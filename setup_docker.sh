@@ -33,7 +33,7 @@ function print_separator() {
 }
 
 function print_banner() {
-    clear
+    clear 2>/dev/null || true
     echo -e "\e[35m==================================================="
     echo -e "      Instalador de Grafeno - Offensive Skills"
     echo -e "===================================================\e[0m"
