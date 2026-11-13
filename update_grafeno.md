@@ -152,3 +152,14 @@ npm run dist:mac:arm64
 - `electron-updater` solo detecta el nuevo release si el usuario tiene Grafeno instalado desde un paquete (`.deb`, `.AppImage`, etc.). En modo desarrollo (`npm start`) las actualizaciones automáticas no se comprueban.
 - El auto-updater compara la versión del release con la de `package.json` embebida en la app instalada. Por eso es importante no saltarse versiones ni reutilizar tags existentes.
 - Si una Release se edita manualmente en GitHub para convertirla de "Published" a "Draft", `electron-updater` no la detectará. Los metadatos en `latest*.yml` deben coincidir estrictamente con una release pública.
+
+## macOS: actualización manual
+
+La autoactualización está **desactivada en macOS** a propósito. Los usuarios de macOS deben descargar el `.dmg` de la Release e instalarlo manualmente.
+
+El workflow sigue generando `latest-mac.yml` porque `electron-builder` lo crea al empaquetar, pero Grafeno no lo usa para actualizarse. Para habilitar la autoactualización en macOS en el futuro haría falta:
+
+- añadir el target `zip` al build de macOS (Squirrel.Mac no instala DMGs);
+- firmar y notarizar la app con un Apple Developer ID (`CSC_LINK`, `CSC_KEY_PASSWORD`, `APPLE_ID`, etc.).
+
+Sin firma, aunque hubiera zip, Squirrel.Mac rechazaría la actualización.

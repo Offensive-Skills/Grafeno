@@ -97,7 +97,7 @@
       }
 
       if (status === 'unsupported') {
-        text.textContent = window.i18n.t('update.unsupported');
+        container.hidden = true;
         return;
       }
 

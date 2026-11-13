@@ -14,7 +14,7 @@ const {
 } = require('./controllers/composeNetworkAllocator');
 const { parseVersion, versionAtLeast, formatVersion } = require('./controllers/dockerVersion');
 const { createUpdateState, reduce, canCheck } = require('./controllers/updateState');
-const { detectPackageType, getPackageInstallPlan, shouldCheckForUpdates, DEFAULT_CHECK_INTERVAL_MS } = require('./controllers/updatePolicy');
+const { detectPackageType, getPackageInstallPlan, shouldCheckForUpdates, DEFAULT_CHECK_INTERVAL_MS, isAutoUpdateSupported } = require('./controllers/updatePolicy');
 
 let mainWindow;
 let harborCredentials = null;
@@ -808,6 +808,12 @@ function handleUpdateError(error) {
 }
 
 async function checkForUpdatesNow() {
+  if (!isAutoUpdateSupported(process.platform)) {
+    if (updateState.state !== 'unsupported') {
+      applyUpdateEvent({ type: 'unsupported', reason: 'La autoactualización no está disponible en macOS.' });
+    }
+    return updateState;
+  }
   if (['downloaded', 'installing'].includes(updateState.state)) return updateState;
   if (!canCheck(updateState)) return updateState;
 
@@ -1118,9 +1124,16 @@ autoUpdater.on('error', (err) => {
 // ── Ciclo de vida de la app ─────────────────────────────────────────
 
 app.whenReady().then(() => {
-  updateState = { ...updateState, currentVersion: app.getVersion() };
+  updateState = {
+    ...updateState,
+    currentVersion: app.getVersion(),
+    supported: isAutoUpdateSupported(process.platform)
+  };
+  if (!updateState.supported) {
+    applyUpdateEvent({ type: 'unsupported', reason: 'La autoactualización no está disponible en macOS.' });
+  }
   createWindow();
-  startUpdateCheckTimer();
+  if (updateState.supported) startUpdateCheckTimer();
 });
 
 app.on('before-quit', () => {

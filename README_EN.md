@@ -96,6 +96,13 @@ The `GRAFENO_DEVTOOLS=1` environment variable automatically opens the developer 
 
 ---
 
+## Updates
+
+- **Linux:** Grafeno checks for updates at startup, every 6 hours and from **Settings > Updates**. Downloads can be cancelled; for `.deb`/`.rpm`, installation asks for the sudo password.
+- **macOS:** automatic updates are disabled. Download the `.dmg` from the release and install it manually.
+
+---
+
 ## License
 
 Grafeno © 2024 by Offensive Skills is licensed under Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International.

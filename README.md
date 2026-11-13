@@ -96,6 +96,13 @@ La variable de entorno `GRAFENO_DEVTOOLS=1` abre automáticamente las herramient
 
 ---
 
+## Actualizaciones
+
+- **Linux:** Grafeno comprueba actualizaciones al arrancar, cada 6 horas y desde **Configuración > Actualizaciones**. La descarga se puede cancelar y, en `.deb`/`.rpm`, la instalación pide la contraseña sudo.
+- **macOS:** la actualización automática está desactivada. Descarga el `.dmg` de la release e instálalo manualmente.
+
+---
+
 ## License
 
 Grafeno © 2024 by Offensive Skills is licensed under Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International.
