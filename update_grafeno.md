@@ -10,8 +10,11 @@ Al hacer push de un tag `v*` a GitHub, el workflow de CI/CD (`.github/workflows/
 
 - Compila para **Linux x64** y **Linux arm64**: `.deb`, `.AppImage`, `.rpm`
 - Compila para **macOS arm64**: `.dmg`
-- Genera de forma automatizada una nueva Release en GitHub asociada al tag subido
-- Sube los binarios de instalación junto con los metadatos de control (`latest-linux.yml` y `latest-mac.yml`) necesarios para el mecanismo de auto-actualización de `electron-updater`
+- Sube los binarios y los metadatos de control (`latest-linux.yml`, `latest-linux-arm64.yml` y `latest-mac.yml`) como artefactos del workflow
+- En un **job de publicación único**, verifica que los tres metadatos existen, crea o actualiza el borrador de Release y sube todos los assets de una sola vez
+- Vuelve a verificar contra la Release que los tres `latest*.yml` están presentes
+
+Así ninguna release puede quedar publicada sin sus metadatos de auto-actualización.
 
 `electron-updater` detectará el nuevo release en todos los equipos con Grafeno instalado la próxima vez que abran la aplicación.
 
@@ -78,14 +81,22 @@ Al hacer push del tag, el workflow de GitHub Actions se lanza automáticamente.
 
 1. Ve a [`https://github.com/Offensive-Skills/Grafeno/actions`](https://github.com/Offensive-Skills/Grafeno/actions)
 2. Verás el workflow **"Build releases"** en ejecución
-3. Se crean **3 jobs en paralelo**:
-   - `linux (x64)` — Ubuntu latest
-   - `linux (arm64)` — Ubuntu latest (cross-compile)
-   - `mac` — macOS 15 (Apple Silicon)
-4. Al finalizar, `electron-builder` emplea el token de GitHub para generar y publicar la Release automáticamente. No es necesaria ninguna intervención manual en la interfaz de GitHub. Los instaladores quedan publicados bajo la ruta `/releases/tag/vX.Y.Z`
+3. Se crean **3 jobs de build en paralelo**:
+   - `build-linux (x64)` — Ubuntu latest
+   - `build-linux (arm64)` — Ubuntu latest (cross-compile)
+   - `build-mac` — macOS 15 (Apple Silicon)
+4. Cada job de build compila con `-p never` y sube sus binarios y sus `latest*.yml` como artefactos del workflow.
+5. Cuando terminan los tres, se ejecuta el job **`publish`**:
+   - Descarga todos los artefactos.
+   - Comprueba que existen `latest-linux.yml`, `latest-linux-arm64.yml` y `latest-mac.yml`.
+   - Crea el borrador de Release si no existe y sube todos los assets con `gh release upload --clobber`.
+   - Verifica contra la Release que los tres metadatos están subidos; si falta alguno, el workflow falla.
+6. La Release queda como **Draft**. No hace falta tocar los assets a mano: solo añadir notas si se desea y publicar.
 
 > ![Note] Draft Release
-> No se sube directamente la release como pública, pero si pinchas dentro de las Releases de Grafeno, se puede ver que se ha creado la etiqueta como _Draft_ (Borrador), y que tiene los artefactos de MAC y Linux (x64 y arm64) correctos para publicar la release. Solo hay que darle a "Editar", añadir notas si es que lo deseamos, y publicar.
+> No se sube directamente la release como pública, pero si pinchas dentro de las Releases de Grafeno, se puede ver que se ha creado la etiqueta como _Draft_ (Borrador), y que tiene todos los artefactos de macOS y Linux (x64 y arm64) y sus metadatos. Solo hay que darle a "Editar", añadir notas si es que lo deseamos, y publicar.
+
+> **WARNING:** No reemplaces un binario de una Release a mano sin regenerar y volver a subir su `latest*.yml`. El yml incluye `sha512` y `size` del binario; si no coinciden, `electron-updater` rechaza la actualización. Si tienes que rehacer un paquete, vuelve a lanzar el workflow del tag o sube también el yml generado por `electron-builder` para ese binario.
 
 ---
 
