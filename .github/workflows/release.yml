@@ -92,18 +92,19 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+
       - uses: actions/download-artifact@v7
         with:
           path: artifacts
           merge-multiple: true
 
       - name: Verify update metadata
-        run: |
-          set -euo pipefail
-          for file in latest-linux.yml latest-linux-arm64.yml latest-mac.yml; do
-            test -s "artifacts/$file" || { echo "Missing $file"; exit 1; }
-          done
-          ls -lh artifacts
+        run: node scripts/verifyUpdateMetadata.js artifacts
 
       - name: Create or update draft release
         env:

@@ -88,7 +88,7 @@ Al hacer push del tag, el workflow de GitHub Actions se lanza automáticamente.
 4. Cada job de build compila con `-p never` y sube sus binarios y sus `latest*.yml` como artefactos del workflow.
 5. Cuando terminan los tres, se ejecuta el job **`publish`**:
    - Descarga todos los artefactos.
-   - Comprueba que existen `latest-linux.yml`, `latest-linux-arm64.yml` y `latest-mac.yml`.
+   - Ejecuta `scripts/verifyUpdateMetadata.js`, que comprueba versión, ficheros, tamaños y `sha512` de `latest-linux.yml`, `latest-linux-arm64.yml` y `latest-mac.yml`.
    - Crea el borrador de Release si no existe y sube todos los assets con `gh release upload --clobber`.
    - Verifica contra la Release que los tres metadatos están subidos; si falta alguno, el workflow falla.
 6. La Release queda como **Draft**. No hace falta tocar los assets a mano: solo añadir notas si se desea y publicar.
