@@ -89,6 +89,10 @@ GRAFENO_DEVTOOLS=1 npm start
 
 La variable de entorno `GRAFENO_DEVTOOLS=1` abre automáticamente las herramientas de desarrollador al iniciar la aplicación.
 
+### Pruebas de integración
+
+Las pruebas de integración se ejecutan en VMs reales de Incus (Ubuntu 26.04 y Fedora 44). La guía completa, con el build de artefactos, instalación, smoke tests, pruebas de Docker, actualizaciones con feed local y limpieza, está en [`testing_incus.md`](./testing_incus.md).
+
 ---
 
 ## Notas adicionales

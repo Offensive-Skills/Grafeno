@@ -89,6 +89,10 @@ GRAFENO_DEVTOOLS=1 npm start
 
 The `GRAFENO_DEVTOOLS=1` environment variable automatically opens the developer tools when the application starts.
 
+### Integration testing
+
+Integration tests run on real Incus VMs (Ubuntu 26.04 and Fedora 44). The full guide, including artifact builds, installation, smoke tests, Docker checks, local update feeds and cleanup, is in [`testing_incus.md`](./testing_incus.md).
+
 ---
 
 ## Additional notes

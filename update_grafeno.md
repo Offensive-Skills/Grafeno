@@ -31,7 +31,11 @@ git status        # no debe haber cambios pendientes
 git pull          # sincronizar con origin
 ```
 
-### 2. Subir la versión en `package.json`
+### 2. Validar los artefactos en Incus
+
+Antes de subir la versión definitiva, sigue la checklist de [`testing_incus.md`](./testing_incus.md): construye una release candidata, instala el `.deb` y el `.rpm` en VMs limpias, valida el arranque de la app, la instalación de Docker y el flujo de actualización con un feed local. No publiques una release sin esta validación.
+
+### 3. Subir la versión en `package.json`
 
 Edita `package.json` y actualiza el campo `version`. Sigue [semver](https://semver.org/):
 
@@ -47,10 +51,10 @@ npm version minor   # nueva funcionalidad
 npm version major   # cambio mayor
 ```
 
-> `npm version` actualiza `package.json` y `package-lock.json`, hace commit y crea el tag automáticamente. Si lo haces así, **salta directamente al paso 5**.
+> `npm version` actualiza `package.json` y `package-lock.json`, hace commit y crea el tag automáticamente. Si lo haces así, **salta directamente al paso 6**.
 
 
-### 3. Commit con la nueva versión
+### 4. Commit con la nueva versión
 
 Si has editado `package.json` manualmente:
 
@@ -60,13 +64,13 @@ git add package.json package-lock.json
 git commit -m "chore: bump version to X.Y.Z"
 ```
 
-### 4. Crear el tag de versión
+### 5. Crear el tag de versión
 
 ```bash
 git tag vX.Y.Z
 ```
 
-### 5. Hacer push del commit y del tag
+### 6. Hacer push del commit y del tag
 
 ```bash
 git push
